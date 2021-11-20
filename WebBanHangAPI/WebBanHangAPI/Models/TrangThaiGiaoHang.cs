@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace WebBanHangAPI.Models
 {
-    public class LoaiSanPham
+    public class TrangThaiGiaoHang
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public string LoaiSanPhamId { get; set; }
-        public string tenLoaiSP { get; set; }
-        public ICollection<SanPham> SanPhams { get; set; }
+        public string TrangThaiGiaoHangId { get; set; }
+        public string tenTrangThai { get; set; }
+        public ICollection<HoaDon> HoaDons { get; set; }
     }
 }
