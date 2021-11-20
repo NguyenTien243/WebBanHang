@@ -19,6 +19,6 @@ namespace WebBanHangAPI.Models
         public Boolean thanhToanOnline { get; set; }
         public Boolean daThanhToan { get; set; }
         [ForeignKey("HoaDonId")]
-        public ICollection<ChiTietHD> ChiTietHDs { get; set; }
+        public ICollection<ChiTietHD> ChiTietHD { get; set; }
     }
 }
