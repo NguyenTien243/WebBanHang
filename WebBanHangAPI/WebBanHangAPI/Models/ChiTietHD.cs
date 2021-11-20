@@ -9,12 +9,12 @@ namespace WebBanHangAPI.Models
 {
     public class ChiTietHD
     {
-        [Key]
-        [Column(Order = 0)]
+     
+        [Key, Column(Order = 0)]
         public string HoaDonId { get; set; }
         public HoaDon HoaDon { get; set; }
-        [Key]
-        [Column(Order = 1)]
+        
+        [Key, Column(Order = 1)]
         public string SanPhamId { get; set; }
         public SanPham SanPham { get; set; }
         public int soLuong { get; set; }

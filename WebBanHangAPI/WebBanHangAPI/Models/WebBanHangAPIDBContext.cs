@@ -21,7 +21,8 @@ namespace WebBanHangAPI.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-           
+            modelBuilder.Entity<ChiTietHD>().HasKey(ct => new { ct.HoaDonId, ct.SanPhamId });
+
         }
     }
 }
