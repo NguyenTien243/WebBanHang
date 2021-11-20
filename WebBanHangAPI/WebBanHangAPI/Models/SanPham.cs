@@ -18,6 +18,8 @@ namespace WebBanHangAPI.Models
         public string LoaiSanPhamId { get; set; }
         public LoaiSanPham LoaiSanPham { get; set; }
         [ForeignKey("SanPhamId")]
-        public ICollection<ChiTietHD> ChiTietHD { get; set; }
+        public ICollection<ChiTietHD> ChiTietHDs { get; set; }
+        [ForeignKey("SanPhamId")]
+        public ICollection<GioHang> GioHangs { get; set; }
     }
 }

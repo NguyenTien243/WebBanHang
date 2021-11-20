@@ -10,15 +10,17 @@ namespace WebBanHangAPI.Models
     {
         public string HoaDonId { get; set; }
         public string KhachHangId { get; set; }
+        public NguoiDung KhachHang { get; set; }
         public string NhanVienId { get; set; }
+        public NguoiDung NhanVien { get; set; }
         public double tongHoaDon { get; set; }
         public DateTime ngayXuatDon { get; set; }
         public string diaChiGiaoHang { get; set; }
         public string TrangThaiGiaoHangId { get; set; }
         public TrangThaiGiaoHang TrangThaiGiaoHang { get; set; }
-        public Boolean thanhToanOnline { get; set; }
-        public Boolean daThanhToan { get; set; }
+        public bool thanhToanOnline { get; set; }
+        public bool daThanhToan { get; set; }
         [ForeignKey("HoaDonId")]
-        public ICollection<ChiTietHD> ChiTietHD { get; set; }
+        public ICollection<ChiTietHD> ChiTietHDs { get; set; }
     }
 }
