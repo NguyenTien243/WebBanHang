@@ -13,6 +13,8 @@ namespace WebBanHangAPI.Models
         public DbSet<HoaDon> HoaDons { get; set; }
         public DbSet<ChiTietHD> ChiTietHDs { get; set; }
         public DbSet<TrangThaiGiaoHang> TrangThaiGiaoHangs { get; set; }
+        public DbSet<VaiTro> VaiTros { get; set; }
+        public DbSet<GioHang> GioHangs { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 
