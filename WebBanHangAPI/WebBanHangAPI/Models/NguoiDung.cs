@@ -25,7 +25,7 @@ namespace WebBanHangAPI.Models
         [ForeignKey("NguoiDungId")]
         public ICollection<GioHang> GioHangs { get; set; }
 
-
-        public ICollection<HoaDon> HoaDons { get; set; }
+        [ForeignKey("NguoiDungId")]
+        public ICollection<HoaDon> HoaDonsKhachHang { get; set; }
     }
 }

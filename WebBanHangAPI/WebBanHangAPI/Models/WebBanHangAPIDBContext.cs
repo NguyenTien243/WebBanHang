@@ -22,6 +22,7 @@ namespace WebBanHangAPI.Models
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<ChiTietHD>().HasKey(ct => new { ct.HoaDonId, ct.SanPhamId });
+            modelBuilder.Entity<GioHang>().HasKey(gh => new { gh.NguoiDungId, gh.SanPhamId });
 
         }
     }

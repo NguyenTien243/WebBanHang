@@ -9,10 +9,9 @@ namespace WebBanHangAPI.Models
     public class HoaDon
     {
         public string HoaDonId { get; set; }
-        public string KhachHangId { get; set; }
-        public NguoiDung KhachHang { get; set; }
-        public string NhanVienId { get; set; }
-        public NguoiDung NhanVien { get; set; }
+        
+        public string NguoiDungId { get; set; }
+        public NguoiDung NguoiDung { get; set; }
         public double tongHoaDon { get; set; }
         public DateTime ngayXuatDon { get; set; }
         public string diaChiGiaoHang { get; set; }
