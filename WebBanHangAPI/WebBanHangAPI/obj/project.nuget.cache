@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Q9q7NFXl0Jgqj2Cl2tuxbcfgbaDStt5RuQrBvaVvieoVpVabes62wWa5ioACw7GEdGpbYBFUSrEVrxUPrx6C9A==",
+  "dgSpecHash": "mxa7tb4D0JfgEuguiT22wjf0Su2IZGr/NBri2/cMx2YExKRtySMiiFztdJ+mmZ8u25RqS4PhTeG2MS/E3X+5GA==",
   "success": true,
   "projectFilePath": "C:\\Users\\Admin\\Desktop\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\WebBanHangAPI.csproj",
   "expectedPackageFiles": [
@@ -21,8 +21,13 @@
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.configuration\\3.1.15\\microsoft.extensions.configuration.3.1.15.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\3.1.15\\microsoft.extensions.configuration.abstractions.3.1.15.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.configuration.binder\\3.1.15\\microsoft.extensions.configuration.binder.3.1.15.nupkg.sha512",
+    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.configuration.fileextensions\\3.1.15\\microsoft.extensions.configuration.fileextensions.3.1.15.nupkg.sha512",
+    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.configuration.json\\3.1.15\\microsoft.extensions.configuration.json.3.1.15.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\3.1.15\\microsoft.extensions.dependencyinjection.3.1.15.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\3.1.15\\microsoft.extensions.dependencyinjection.abstractions.3.1.15.nupkg.sha512",
+    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\3.1.15\\microsoft.extensions.fileproviders.abstractions.3.1.15.nupkg.sha512",
+    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.fileproviders.physical\\3.1.15\\microsoft.extensions.fileproviders.physical.3.1.15.nupkg.sha512",
+    "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.filesystemglobbing\\3.1.15\\microsoft.extensions.filesystemglobbing.3.1.15.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.logging\\3.1.15\\microsoft.extensions.logging.3.1.15.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\3.1.15\\microsoft.extensions.logging.abstractions.3.1.15.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.options\\3.1.15\\microsoft.extensions.options.3.1.15.nupkg.sha512",

@@ -26,7 +26,7 @@ namespace WebBanHangAPI.Controllers
 
         [HttpGet]
         public IEnumerable<LoaiSanPham> Get()
-        {   
+        {
             //var _context = new WebBanHangAPIDBContext();
             //LoaiSanPham sp = new LoaiSanPham();
             //sp.QuizName = "tienvip";

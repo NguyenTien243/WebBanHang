@@ -15,11 +15,17 @@ namespace WebBanHangAPI.Models
         public DbSet<TrangThaiGiaoHang> TrangThaiGiaoHangs { get; set; }
         public DbSet<VaiTro> VaiTros { get; set; }
         public DbSet<GioHang> GioHangs { get; set; }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+
+        public WebBanHangAPIDBContext(DbContextOptions options) : base(options)
         {
 
-            optionsBuilder.UseSqlServer(@"Data Source=.;Initial Catalog=WebBanHang;Integrated Security=True");
         }
+
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+
+        //    optionsBuilder.UseSqlServer(@"Data Source=.;Initial Catalog=WebBanHang;Integrated Security=True");
+        //}
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
