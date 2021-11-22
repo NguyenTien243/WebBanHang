@@ -8,9 +8,9 @@ namespace WebBanHangAPI.ViewModels
 {
     public class LoginRequest
     {
-        [Required(ErrorMessage = "Chưa nhập tài khoản")]
+        //[Required(ErrorMessage = "Chưa nhập tài khoản")]
         public string tenDangNhap { get; set; }
-        [Required(ErrorMessage = "Chưa nhập mật khẩu")]
+        //[Required(ErrorMessage = "Chưa nhập mật khẩu")]
         public string matKhau { get; set; }
         
     }

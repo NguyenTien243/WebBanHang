@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace WebBanHangAPI.Models
-{
+{   [Table("NguoiDungs")]
     public class NguoiDung
     {
         [Key]
