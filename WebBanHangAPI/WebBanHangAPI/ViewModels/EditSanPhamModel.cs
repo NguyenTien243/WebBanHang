@@ -1,28 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WebBanHangAPI.Models
+namespace WebBanHangAPI.ViewModels
 {
-    public class SanPham
+    public class EditSanPhamModel
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string SanPhamId { get; set; }
         public string tenSP { get; set; }
         public string hinhAnh { get; set; }
         public double giaTien { get; set; }
-        public int    giamGia  { get; set; }
+        public int giamGia { get; set; }
         public string moTa { get; set; }
         public int soLuongConLai { get; set; }
         public string LoaiSanPhamId { get; set; }
-        public LoaiSanPham LoaiSanPham { get; set; }
-        [ForeignKey("SanPhamId")]
-        public ICollection<ChiTietHD> ChiTietHDs { get; set; }
-        [ForeignKey("SanPhamId")]
-        public ICollection<GioHang> GioHangs { get; set; }
     }
 }

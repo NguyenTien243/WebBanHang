@@ -1,0 +1,123 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using WebBanHangAPI.Common;
+using WebBanHangAPI.Models;
+using WebBanHangAPI.ViewModels;
+
+namespace WebBanHangAPI.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class VaiTroController : ControllerBase
+    {
+        
+        private readonly WebBanHangAPIDBContext _context;
+        public VaiTroController(WebBanHangAPIDBContext context)
+        {
+            _context = context;
+        }
+        [HttpGet("laydanhsachVaiTro")]
+        public async Task<IActionResult> Get()
+        {
+            var listvaitro = await _context.VaiTros.ToListAsync();
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = listvaitro });
+        }
+
+        [HttpPost("themVaiTro")]
+        public async Task<ActionResult<VaiTro>> themvaitro(VaiTroModel request)
+        {
+            if (request.tenVaiTro == null || request.tenVaiTro.Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "tên vai trò bắt buộc" });
+            var findvaitro = await _context.VaiTros.Where(u => u.tenVaiTro.Trim() == request.tenVaiTro.Trim()).ToListAsync();
+            if (findvaitro.Count != 0)
+                return BadRequest(new Response { Status = 400, Message = "Tên vai trò đã tồn tại, vui lòng chọn tên khác khác" });
+
+            var newvaitro = new VaiTro();
+            newvaitro.tenVaiTro = request.tenVaiTro;
+            _context.VaiTros.Add(newvaitro);
+            try
+            {
+                await _context.SaveChangesAsync();
+                request.VaiTroId = newvaitro.VaiTroId;
+            }
+            catch(IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+
+            return Ok(new Response { Status = 200, Message = "Inserted", Data = request });
+        }
+
+        [HttpPut("suatenvaitro")]
+        public async Task<IActionResult> editvaitro([FromBody] VaiTroModel request)
+        {
+            if (request.VaiTroId == null || request.VaiTroId.Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Thiếu VaiTroId" });
+            if (request.tenVaiTro == null || request.tenVaiTro.Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "tên vai trò bắt buộc" });
+            var findvaitro = await _context.VaiTros.FindAsync(request.VaiTroId);
+            if (findvaitro == null)
+            {
+                return NotFound(new Response { Status = 404, Message = "Vai trò không tồn tại" });
+            }
+            
+            var checkname = await _context.VaiTros.Where(s => s.tenVaiTro == request.tenVaiTro && s.VaiTroId != request.VaiTroId).ToListAsync();
+
+            if (checkname.Count != 0)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Tên vai trò đã tồn tại, vui lòng thử tên khác" });
+            }
+            try
+            {
+                findvaitro.tenVaiTro = request.tenVaiTro;
+                await _context.SaveChangesAsync();
+                
+
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Updated", Data = request });
+        }
+
+        [HttpDelete("deleteVaiTro/{id}")]
+        public async Task<ActionResult<VaiTro>> DeleteLoaiSP(string id)
+        {
+          
+            var vaitro = await _context.VaiTros.FindAsync(id);
+            if (vaitro != null)
+            {
+                var users = await _context.NguoiDungs.Where(s => s.VaiTroId == id).ToListAsync();
+                foreach( var item in users)
+                {
+                    item.VaiTroId = null;
+                }
+                
+                try
+                {
+                    _context.VaiTros.Remove(vaitro);
+                    await _context.SaveChangesAsync();
+                }
+                catch (IndexOutOfRangeException e)
+                {
+                    return BadRequest(new Response { Status = 400, Message = e.ToString() });
+                }
+
+            }
+            else
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy vai trò" });
+            }    
+            
+
+            return Ok(new Response { Status = 200, Message = "Deleted" });
+        }
+
+    }
+}

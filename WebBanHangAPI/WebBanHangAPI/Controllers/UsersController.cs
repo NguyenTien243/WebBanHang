@@ -59,7 +59,7 @@ namespace WebBanHangAPI.Controllers
             var token = _jwtAuthenticationManager.Authenticate(finduser[0], tenvaitro);
             if (token == null)
                 return Unauthorized();
-            return Ok(token);
+            return Ok(new Response { Status = 200, Message = "Đăng nhập thành công", Data = token });
         }
         public static bool isEmail(string inputEmail)
         {
@@ -87,7 +87,10 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "Tên đăng nhập bắt buộc" });
             if (request.tenNguoiDung == null || request.tenNguoiDung.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "Tên người dùng bắt buộc" });
-
+            if (request.diaChi == null || request.diaChi.Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Địa chỉ bắt buộc" });
+            if (request.sDT == null || request.sDT.Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Số điện thoại bắt buộc" });
             if (request.matKhau == null || request.matKhau.Length < 8)
                 return BadRequest(new Response { Status = 400, Message = "mật khẩu bắt buộc, tối thiểu 8 ký tự" });
             if (request.xacNhanMatKhau == null || request.xacNhanMatKhau.Length == 0)

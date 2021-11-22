@@ -51,7 +51,7 @@ namespace WebBanHangAPI.Controllers
         }
 
         [HttpPut("suaLoaiSP")]
-        public async Task<IActionResult> PutQuiz([FromBody] EditLoaiSanPhamModel loaisp)
+        public async Task<IActionResult> editLoaiSP([FromBody] EditLoaiSanPhamModel loaisp)
         {
             var findLoaiSP = await _context.LoaiSanPhams.FindAsync(loaisp.LoaiSanPhamId);
             if (findLoaiSP == null)
