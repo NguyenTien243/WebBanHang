@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,12 @@ namespace WebBanHangAPI.IServices
 {
     public class UserService : IUserService
     {
-        public Task<bool> Authenticate(LoginRequest request)
+
+        public async Task<bool> Authenticate(LoginRequest request)
         {
+            //var user = await
+            //var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Tokens:Key"]))
+            
             throw new NotImplementedException();
         }
 

@@ -15,6 +15,7 @@ namespace WebBanHangAPI.Models
         public DbSet<TrangThaiGiaoHang> TrangThaiGiaoHangs { get; set; }
         public DbSet<VaiTro> VaiTros { get; set; }
         public DbSet<GioHang> GioHangs { get; set; }
+        public DbSet<NguoiDung> NguoiDungs { get; set; }
 
         public WebBanHangAPIDBContext(DbContextOptions options) : base(options)
         {
