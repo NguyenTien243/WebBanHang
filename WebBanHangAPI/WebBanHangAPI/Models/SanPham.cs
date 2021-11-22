@@ -24,5 +24,6 @@ namespace WebBanHangAPI.Models
         public ICollection<ChiTietHD> ChiTietHDs { get; set; }
         [ForeignKey("SanPhamId")]
         public ICollection<GioHang> GioHangs { get; set; }
+        public bool isDeleted { get; set; }
     }
 }
