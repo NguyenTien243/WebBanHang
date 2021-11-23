@@ -127,7 +127,6 @@ namespace WebBanHangAPI.Controllers
         [HttpDelete("deleteSP/{id}")]
         public async Task<ActionResult<SanPham>> DeleteSP(string id)
         {
-          
             var SP = await _context.SanPhams.FindAsync(id);
             if (SP != null)
             {
@@ -140,14 +139,11 @@ namespace WebBanHangAPI.Controllers
                 {
                     return BadRequest(new Response { Status = 400, Message = e.ToString() });
                 }
-
             }
             else
             {
                 return BadRequest(new Response { Status = 400, Message ="Không tìm thấy Sản phẩm" });
             }    
-            
-
             return Ok(new Response { Status = 200, Message = "Deleted" });
         }
 
