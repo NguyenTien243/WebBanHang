@@ -13,6 +13,7 @@ namespace WebBanHangAPI.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string LoaiSanPhamId { get; set; }
         public string tenLoaiSP { get; set; }
+        public string hinhAnh { get; set; }
         public ICollection<SanPham> SanPhams { get; set; }
     }
 }

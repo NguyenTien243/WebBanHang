@@ -35,6 +35,9 @@ namespace WebBanHangAPI
             services.AddDbContext<WebBanHangAPIDBContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("ConnStr")));
             services.AddControllers();
+            //https://www.youtube.com/watch?v=MBpH8sGqrMs add Cors fix loi request Chorme
+            services.AddCors(options => options.AddDefaultPolicy(builder => builder.AllowAnyOrigin()));
+
             var key = "this is my test key";
             services.AddAuthentication(x =>
             {
@@ -72,6 +75,7 @@ namespace WebBanHangAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
 
