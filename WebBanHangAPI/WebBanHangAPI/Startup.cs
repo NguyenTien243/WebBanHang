@@ -36,7 +36,26 @@ namespace WebBanHangAPI
             options.UseSqlServer(Configuration.GetConnectionString("ConnStr")));
             services.AddControllers();
             //https://www.youtube.com/watch?v=MBpH8sGqrMs add Cors fix loi request Chorme
-            services.AddCors(options => options.AddDefaultPolicy(builder => builder.AllowAnyOrigin()));
+            //services.AddCors(options => options.AddDefaultPolicy(builder => builder.WithOrigins("*")));
+            services.AddCors();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("Allow",
+                                  builder =>
+                                  {
+                                      builder.WithOrigins("http://localhost:3000", "http://localhost",
+                                          "http://localhost:3001", "https://lmsg03.herokuapp.com")
+                                            .AllowAnyHeader()
+                                            .AllowCredentials()
+                                            .AllowAnyMethod();
+                                      builder.AllowAnyHeader();
+                                      builder.AllowAnyMethod();
+                                      builder.AllowCredentials();
+                                      //builder.AllowAnyOrigin();
+                                      builder.SetIsOriginAllowedToAllowWildcardSubdomains();
+                                      builder.SetIsOriginAllowed(_ => true);
+                                  });
+            });
 
             var key = "this is my test key";
             services.AddAuthentication(x =>
@@ -75,7 +94,13 @@ namespace WebBanHangAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
-            app.UseCors();
+            app.UseCors("Allow");
+            app.UseCors(builder => builder
+                //.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(_ => true)
+                .AllowCredentials());
             app.UseAuthentication();
             app.UseAuthorization();
 
