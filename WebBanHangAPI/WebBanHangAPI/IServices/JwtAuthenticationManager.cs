@@ -41,7 +41,6 @@ namespace WebBanHangAPI.IServices
                     new Claim("nguoiDungId", nguoidung.NguoiDungId),
                     new Claim("tenNguoiDung", nguoidung.tenNguoiDung),
                     new Claim("diaChi", nguoidung.diaChi),
-                    new Claim("tenNguoiDung", nguoidung.tenNguoiDung),
                     new Claim("sDT", nguoidung.sDT),
                     new Claim("email", nguoidung.email),
                     new Claim("vaiTro", vaitro),
