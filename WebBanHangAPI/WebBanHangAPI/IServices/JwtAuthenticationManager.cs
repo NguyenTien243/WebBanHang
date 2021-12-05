@@ -24,6 +24,7 @@ namespace WebBanHangAPI.IServices
             this.key = key;
            
         }
+        // dia chi, full name, sodienthoai,email
         //https://www.youtube.com/watch?v=vWkPdurauaA
         public string Authenticate(NguoiDung nguoidung,string vaitro)
         {
@@ -39,6 +40,10 @@ namespace WebBanHangAPI.IServices
                 {
                     new Claim("nguoiDungId", nguoidung.NguoiDungId),
                     new Claim("tenNguoiDung", nguoidung.tenNguoiDung),
+                    new Claim("diaChi", nguoidung.diaChi),
+                    new Claim("tenNguoiDung", nguoidung.tenNguoiDung),
+                    new Claim("sDT", nguoidung.sDT),
+                    new Claim("email", nguoidung.email),
                     new Claim("vaiTro", vaitro),
                 }),
                 Expires = DateTime.Now.AddHours(1),
@@ -48,6 +53,11 @@ namespace WebBanHangAPI.IServices
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token); 
+        }
+
+        public NguoiDung GetInFo(string token)
+        {
+            throw new NotImplementedException();
         }
     }
 }

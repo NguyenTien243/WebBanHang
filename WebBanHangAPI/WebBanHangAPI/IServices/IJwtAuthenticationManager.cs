@@ -9,5 +9,6 @@ namespace WebBanHangAPI.IServices
     public interface IJwtAuthenticationManager
     {
         string Authenticate(NguoiDung username, string vaitro);
+        NguoiDung GetInFo(string token);
     }
 }
