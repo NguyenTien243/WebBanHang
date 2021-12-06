@@ -7,7 +7,6 @@ namespace WebBanHangAPI.ViewModels
 {
     public class GioHangModel
     {
-        public string NguoiDungId { get; set; }
         public string SanPhamId { get; set; }
         public int soLuong { get; set; }
     }

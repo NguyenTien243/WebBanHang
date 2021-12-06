@@ -44,8 +44,11 @@ namespace WebBanHangAPI.Controllers
         [HttpGet("GetHeaderData")]
         public ActionResult<string> GetHeaderData(string headerKey)
         {
-            Request.Headers.TryGetValue(headerKey, out var headerValue);
-            return Ok(headerValue);
+            
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            var NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+            return Ok();
         }
         [HttpPost("dangnhap")]
         [AllowAnonymous]
@@ -180,6 +183,53 @@ namespace WebBanHangAPI.Controllers
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
         }
 
+        [HttpPost("doimatkhau")]
+        public async Task<IActionResult> doimatkhau([FromBody] EditPassword request )
+        {
+
+            if (request.matKhauHienTai == null || request.matKhauHienTai.Trim().Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Mật khẩu hiện tại không được bỏ trống!" });
+            if (request.matKhauMoi == null || request.matKhauMoi.Trim().Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Mật khẩu mới không được bỏ trống!" });
+            if (request.xacNhanMatKhauMoi == null || request.xacNhanMatKhauMoi.Trim().Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Xác nhận mật khẩu mới không được bỏ trống!" });
+            if (request.matKhauMoi.Length < 8)
+                return BadRequest(new Response { Status = 400, Message = "Mật khẩu mới tối thiểu 8 ký tự" });
+            if (request.xacNhanMatKhauMoi != request.matKhauMoi)
+                    return BadRequest(new Response { Status = 400, Message = "Mật khẩu xác nhận không trùng" });
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+
+            var findUser = await _context.NguoiDungs.FindAsync(NguoiDungId);
+            if (findUser == null)
+            {
+                return NotFound(new Response { Status = 404, Message = "Không tìm thấy người dùng" });
+            }
+            if(findUser.matKhau != request.matKhauHienTai)
+                return BadRequest(new Response { Status = 400, Message = "Mật khẩu hiện tại không đúng!" });
+
+            try
+            {
+                findUser.matKhau = request.matKhauMoi;
+                await _context.SaveChangesAsync();
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Cập nhật mật khẩu thành công", Data = null });
+           
+        }
 
     }
 }

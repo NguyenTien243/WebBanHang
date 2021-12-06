@@ -54,9 +54,20 @@ namespace WebBanHangAPI.IServices
             return tokenHandler.WriteToken(token); 
         }
 
-        public NguoiDung GetInFo(string token)
+        public JwtSecurityToken GetInFo(string token)
         {
-            throw new NotImplementedException();
+            var handler = new JwtSecurityTokenHandler();
+            JwtSecurityToken resulttoken = null;
+            try
+            {
+                resulttoken = handler.ReadJwtToken(token.Split(" ", 2)[1]);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                throw new InvalidOperationException("Không đọc được token");
+            }
+         
+            return resulttoken;
         }
     }
 }

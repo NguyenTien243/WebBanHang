@@ -21,45 +21,66 @@ namespace WebBanHangAPI.Controllers
         {
             _context = context;
         }
-        [HttpGet("laydanhsachSP")]
+        [HttpGet("laydanhsachLoaiSP")]
         public async Task<IActionResult> Get()
         {
             var listloaisp = await _context.LoaiSanPhams.ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listloaisp });
         }
+        [HttpGet("layLoaiSPById/{id}")]
+        public async Task<IActionResult> Getbyid(string id)
+        {
+            if(id.Length==0 || id == null)
+                return BadRequest(new Response { Status = 400, Message = "Thiếu Id loại sản phẩm!" });
+            var loaisp = await _context.LoaiSanPhams.FindAsync(id);
+            if(loaisp == null)
+                return NotFound(new Response { Status = 404, Message = "Không tìm thấy loại sản phẩm" });
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = loaisp });
+        }
 
         [HttpPost("themloaiSP")]
         public async Task<ActionResult<LoaiSanPham>> themLoaiSanPham(LoaiSanPhamModel loaiSanPham)
         {
-            //if (loaiSanPham.tenLoaiSP == null )
-            //    return BadRequest(new Response { Status = 400, Message = "Thiếu tenLoaiSP" });
-           
+            if (loaiSanPham.tenLoaiSP == null || loaiSanPham.tenLoaiSP.Length ==0)
+                return BadRequest(new Response { Status = 400, Message = "Thiếu tenLoaiSP" });
+            var checkname = await _context.LoaiSanPhams.Where(s => s.tenLoaiSP == loaiSanPham.tenLoaiSP).ToListAsync();
+            if(checkname.Count != 0)
+                return BadRequest(new Response { Status = 400, Message = "Tên Loại Sản Phẩm đã tồn tại, vui lòng thử tên khác" });
+
+
             var newLoaiSP = new LoaiSanPham();
             newLoaiSP.tenLoaiSP = loaiSanPham.tenLoaiSP;
+            newLoaiSP.hinhAnh = loaiSanPham.hinhAnh;
             _context.LoaiSanPhams.Add(newLoaiSP);
             try
             {
                 await _context.SaveChangesAsync();
-                loaiSanPham.LoaiSanPhamId = newLoaiSP.LoaiSanPhamId;
+                loaiSanPham.hinhAnh = newLoaiSP.hinhAnh;
             }
             catch(IndexOutOfRangeException e)
             {
                 return BadRequest(new Response { Status = 400, Message = e.ToString() });
             }
 
-            return Ok(new Response { Status = 200, Message = "Inserted", Data = loaiSanPham });
+            return Ok(new Response { Status = 200, Message = "Inserted", Data = new EditLoaiSanPhamModel() { LoaiSanPhamId = newLoaiSP.LoaiSanPhamId, hinhAnh = newLoaiSP.hinhAnh, tenLoaiSP = newLoaiSP.tenLoaiSP } });
         }
 
         [HttpPut("suaLoaiSP")]
         public async Task<IActionResult> editLoaiSP([FromBody] EditLoaiSanPhamModel loaisp)
         {
+            if(loaisp.LoaiSanPhamId == null || loaisp.LoaiSanPhamId.Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Thiếu tenLoaiSP" });
+            if (loaisp.tenLoaiSP == null || loaisp.tenLoaiSP.Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Thiếu tenLoaiSP" });
+            
+            
             var findLoaiSP = await _context.LoaiSanPhams.FindAsync(loaisp.LoaiSanPhamId);
             if (findLoaiSP == null)
             {
                 return NotFound(new Response { Status = 404, Message = "LoaiSanPhamId không tồn tại" });
             }
             
-            var checkname = await _context.LoaiSanPhams.Where(s => s.tenLoaiSP == loaisp.tenLoaiSP).ToListAsync();
+            var checkname = await _context.LoaiSanPhams.Where(s => s.tenLoaiSP == loaisp.tenLoaiSP && s.LoaiSanPhamId != loaisp.LoaiSanPhamId).ToListAsync();
 
             if (checkname.Count != 0)
             {
@@ -68,9 +89,8 @@ namespace WebBanHangAPI.Controllers
             try
             {
                 findLoaiSP.tenLoaiSP = loaisp.tenLoaiSP;
+                findLoaiSP.hinhAnh = loaisp.hinhAnh;
                 await _context.SaveChangesAsync();
-                loaisp.LoaiSanPhamId = findLoaiSP.LoaiSanPhamId;
-
             }
             catch (IndexOutOfRangeException e)
             {

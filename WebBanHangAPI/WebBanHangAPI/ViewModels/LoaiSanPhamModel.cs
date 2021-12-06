@@ -8,9 +8,9 @@ namespace WebBanHangAPI.ViewModels
 {
     public class LoaiSanPhamModel
     {
-        [Required(ErrorMessage = "Thiếu LoaiSanPhamId")]
-        public string LoaiSanPhamId { get; set; }
-        [Required(ErrorMessage = "Thiếu tenLoaiSP")]
+        
         public string tenLoaiSP { get; set; }
+        public string hinhAnh { get; set; }
+
     }
 }
