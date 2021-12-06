@@ -1,26 +1,35 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 using WebBanHangAPI.Common;
+using WebBanHangAPI.IServices;
 using WebBanHangAPI.Models;
 using WebBanHangAPI.ViewModels;
 
 namespace WebBanHangAPI.Controllers
 {
+    
     [Route("api/[controller]")]
     [ApiController]
     public class LoaiSanPhamController : ControllerBase
     {
         
         private readonly WebBanHangAPIDBContext _context;
-        public LoaiSanPhamController(WebBanHangAPIDBContext context)
+        private readonly IJwtAuthenticationManager _jwtAuthenticationManager;
+
+        public LoaiSanPhamController(WebBanHangAPIDBContext context, IJwtAuthenticationManager jwtAuthenticationManager)
         {
             _context = context;
+            _jwtAuthenticationManager = jwtAuthenticationManager;
         }
+    
+
         [HttpGet("laydanhsachLoaiSP")]
         public async Task<IActionResult> Get()
         {
@@ -37,10 +46,24 @@ namespace WebBanHangAPI.Controllers
                 return NotFound(new Response { Status = 404, Message = "Không tìm thấy loại sản phẩm" });
             return Ok(new Response { Status = 200, Message = Message.Success, Data = loaisp });
         }
-
+        [Authorize]
         [HttpPost("themloaiSP")]
         public async Task<ActionResult<LoaiSanPham>> themLoaiSanPham(LoaiSanPhamModel loaiSanPham)
         {
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
             if (loaiSanPham.tenLoaiSP == null || loaiSanPham.tenLoaiSP.Length ==0)
                 return BadRequest(new Response { Status = 400, Message = "Thiếu tenLoaiSP" });
             var checkname = await _context.LoaiSanPhams.Where(s => s.tenLoaiSP == loaiSanPham.tenLoaiSP).ToListAsync();
@@ -64,11 +87,25 @@ namespace WebBanHangAPI.Controllers
 
             return Ok(new Response { Status = 200, Message = "Inserted", Data = new EditLoaiSanPhamModel() { LoaiSanPhamId = newLoaiSP.LoaiSanPhamId, hinhAnh = newLoaiSP.hinhAnh, tenLoaiSP = newLoaiSP.tenLoaiSP } });
         }
-
+        [Authorize]
         [HttpPut("suaLoaiSP")]
         public async Task<IActionResult> editLoaiSP([FromBody] EditLoaiSanPhamModel loaisp)
         {
-            if(loaisp.LoaiSanPhamId == null || loaisp.LoaiSanPhamId.Length == 0)
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
+            if (loaisp.LoaiSanPhamId == null || loaisp.LoaiSanPhamId.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "Thiếu tenLoaiSP" });
             if (loaisp.tenLoaiSP == null || loaisp.tenLoaiSP.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "Thiếu tenLoaiSP" });
@@ -98,11 +135,24 @@ namespace WebBanHangAPI.Controllers
             }
             return Ok(new Response { Status = 200, Message = "Updated", Data = loaisp });
         }
-
+        [Authorize]
         [HttpDelete("deleteLoaiSP/{id}")]
         public async Task<ActionResult<LoaiSanPham>> DeleteLoaiSP(string id)
         {
-          
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
             var loaiSP = await _context.LoaiSanPhams.FindAsync(id);
             if (loaiSP != null)
             {

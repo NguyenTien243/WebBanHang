@@ -61,6 +61,7 @@ namespace WebBanHangAPI
             });
 
             var key = "this is my test key";
+            // su dung JWTService --> chuyen sang sai CustomAuthentication
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -77,7 +78,12 @@ namespace WebBanHangAPI
                     ValidateAudience = false
                 };
             });
-            services.AddSingleton<IJwtAuthenticationManager>(new JwtAuthenticationManager(key));
+
+            // cusstom authentica
+            //services.AddAuthentication("Basic").AddScheme<BasicAuthenticationOptions,CustomAuthenticationHandler>("Basic",null);
+
+            services.AddSingleton<IJwtAuthenticationManager>(new JwtAuthenticationManager(key)); //--> chuyen sang sai customAuthentication
+            //services.AddSingleton<ICustomAuthenticationManager, CustomAuthenticationManager>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebBanHangAPI", Version = "v1" });

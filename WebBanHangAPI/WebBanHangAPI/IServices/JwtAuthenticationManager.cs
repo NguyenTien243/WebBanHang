@@ -12,17 +12,33 @@ namespace WebBanHangAPI.IServices
 {
     public class JwtAuthenticationManager : IJwtAuthenticationManager
     {
-
-        private readonly IDictionary<string, string> users = new Dictionary<string, string>
+        //https://www.youtube.com/watch?v=-N6O2rtCdI8
+        private readonly IList<NguoiDung> users = new List<NguoiDung>
         {
-            { "test1","password1"}, {"test2","password2"}
+           new NguoiDung {tenDangNhap = "test1",matKhau = "password1",VaiTroId = "Admin"},
+           new NguoiDung {tenDangNhap = "test2",matKhau = "password2",VaiTroId = "User"},
         };
+
+        private readonly IDictionary<string, Tuple<string, string>> tokens = new Dictionary<string, Tuple<string, string>>();
+
         private readonly string key;
+        public IDictionary<string, Tuple<string, string>> Tokens => tokens;
       
         public JwtAuthenticationManager(string key)
         {
             this.key = key;
            
+        }
+
+        public string Authenticate(string username, string password)
+        {
+            if(!users.Any(u => u.tenDangNhap == username && u.matKhau == password))
+            {
+                return null;
+            }
+            var token = Guid.NewGuid().ToString();
+            tokens.Add(token, new Tuple<string, string>(username, users.First(u=>u.tenDangNhap == username && u.matKhau == password).VaiTroId));
+            return null;
         }
         // dia chi, full name, sodienthoai,email
         //https://www.youtube.com/watch?v=vWkPdurauaA

@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 using WebBanHangAPI.Common;
+using WebBanHangAPI.IServices;
 using WebBanHangAPI.Models;
 using WebBanHangAPI.ViewModels;
 
@@ -17,9 +20,13 @@ namespace WebBanHangAPI.Controllers
     {
         
         private readonly WebBanHangAPIDBContext _context;
-        public VaiTroController(WebBanHangAPIDBContext context)
+        private readonly IJwtAuthenticationManager _jwtAuthenticationManager;
+
+        public VaiTroController(WebBanHangAPIDBContext context, IJwtAuthenticationManager jwtAuthenticationManager)
         {
             _context = context;
+            _jwtAuthenticationManager = jwtAuthenticationManager;
+
         }
         [HttpGet("laydanhsachVaiTro")]
         public async Task<IActionResult> Get()
@@ -27,10 +34,25 @@ namespace WebBanHangAPI.Controllers
             var listvaitro = await _context.VaiTros.ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listvaitro });
         }
+        [Authorize]
 
         [HttpPost("themVaiTro")]
         public async Task<ActionResult<VaiTro>> themvaitro(VaiTroModel request)
         {
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
             if (request.tenVaiTro == null || request.tenVaiTro.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "tên vai trò bắt buộc" });
             var findvaitro = await _context.VaiTros.Where(u => u.tenVaiTro.Trim() == request.tenVaiTro.Trim()).ToListAsync();
@@ -52,10 +74,25 @@ namespace WebBanHangAPI.Controllers
 
             return Ok(new Response { Status = 200, Message = "Inserted", Data = request });
         }
+        [Authorize]
 
         [HttpPut("suatenvaitro")]
         public async Task<IActionResult> editvaitro([FromBody] VaiTroModel request)
         {
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
             if (request.VaiTroId == null || request.VaiTroId.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "Thiếu VaiTroId" });
             if (request.tenVaiTro == null || request.tenVaiTro.Length == 0)
@@ -85,11 +122,24 @@ namespace WebBanHangAPI.Controllers
             }
             return Ok(new Response { Status = 200, Message = "Updated", Data = request });
         }
-
+        [Authorize]
         [HttpDelete("deleteVaiTro/{id}")]
         public async Task<ActionResult<VaiTro>> DeleteLoaiSP(string id)
         {
-          
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
             var vaitro = await _context.VaiTros.FindAsync(id);
             if (vaitro != null)
             {
