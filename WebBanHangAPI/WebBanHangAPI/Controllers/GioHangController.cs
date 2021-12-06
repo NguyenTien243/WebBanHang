@@ -21,11 +21,11 @@ namespace WebBanHangAPI.Controllers
         {
             _context = context;
         }
-        [HttpGet("xemgiohang")]
-        public async Task<IActionResult> Get()
+        [HttpGet("xemgiohang/{id}")]
+        public async Task<IActionResult> Get(string id)
         {
-            var listloaisp = await _context.LoaiSanPhams.ToListAsync();
-            return Ok(new Response { Status = 200, Message = Message.Success, Data = listloaisp });
+            var cart = await _context.NguoiDungs.Include(p => p.GioHangs).ThenInclude(t => t.SanPham).Where(s => s.NguoiDungId == id).Select(nd => nd.GioHangs.Select(sl => new ItemGioHang() { SanPhamId = sl.SanPhamId, giamGia = sl.SanPham.giamGia,giaTien = sl.SanPham.giaTien,hinhAnh = sl.SanPham.hinhAnh,LoaiSanPhamId = sl.SanPham.LoaiSanPhamId,soLuongConLai = sl.SanPham.soLuongConLai,SoLuongTrongGio = sl.soLuong })).ToListAsync();
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = cart });
         }
 
         [HttpPost("themspvaogiohang")]
@@ -47,7 +47,11 @@ namespace WebBanHangAPI.Controllers
             // nếu sản phẩm có trong giỏ hàng trước rồi thì cập nhật số lượng
             if(fingiohang.Count != 0)
             {
-                fingiohang[0].soLuong = request.soLuong;
+                if(fingiohang[0].soLuong + request.soLuong > findSP.soLuongConLai)
+                {
+                    return BadRequest(new Response { Status = 400, Message = $"Bạn đã có {fingiohang[0].soLuong} trong giỏ hàng. Không thể thêm vì sẽ vượt số lượng có sẵn của sản phẩm." });
+                }    
+                fingiohang[0].soLuong += request.soLuong;
                 try
                 {
                     await _context.SaveChangesAsync();
@@ -57,22 +61,31 @@ namespace WebBanHangAPI.Controllers
                     return BadRequest(new Response { Status = 400, Message = e.ToString() });
                 }
                 return Ok(new Response { Status = 200, Message = "Đã cập nhật số lượng trong giỏ hàng" });
-            }    
-            var gioHang = new GioHang();
-            gioHang.NguoiDungId = request.NguoiDungId;
-            gioHang.SanPhamId = request.SanPhamId;
-            gioHang.soLuong = request.soLuong;
-            _context.GioHangs.Add(gioHang);
-            try
-            {
-                await _context.SaveChangesAsync();
             }
-            catch(IndexOutOfRangeException e)
+            else
             {
-                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+                if (request.soLuong > findSP.soLuongConLai)
+                {
+                    return BadRequest(new Response { Status = 400, Message = $"Không đủ số lượng có sẵn, có thể thêm tối đa {findSP.soLuongConLai} vào giỏ hàng." });
+                }
+                var gioHang = new GioHang();
+                gioHang.NguoiDungId = request.NguoiDungId;
+                gioHang.SanPhamId = request.SanPhamId;
+                gioHang.soLuong = request.soLuong;
+                _context.GioHangs.Add(gioHang);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (IndexOutOfRangeException e)
+                {
+                    return BadRequest(new Response { Status = 400, Message = e.ToString() });
+                }
+                return Ok(new Response { Status = 200, Message = "Đã thêm vào giỏ hàng" });
             }
+            
 
-            return Ok(new Response { Status = 200, Message = "Inserted" });
+            
         }
 
         [HttpPut("suaLoaiSP")]

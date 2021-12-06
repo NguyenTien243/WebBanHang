@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -27,12 +28,19 @@ namespace WebBanHangAPI.Controllers
             var listsp = await _context.SanPhams.Where(s => s.isDeleted == false).ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listsp });
         }
+        [HttpGet("timkiemsanphamtheoten/{name}")]
+        public async Task<IActionResult> SearchSP(string name)
+        {
+            var findsanphams = await _context.SanPhams.Where(s => s.tenSP.Contains(name.Trim()) && s.isDeleted == false).ToListAsync();
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = findsanphams });
+        }
         [HttpGet("laysptheoLoaisanpham/{id}")]
         public async Task<IActionResult> GetSP(string id)
         {
             var findsanphams = await _context.SanPhams.Where(s => s.LoaiSanPhamId == id && s.isDeleted == false).ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = findsanphams });
         }
+        [Authorize]
 
         [HttpPost("themSP")]
         public async Task<ActionResult<SanPham>> themSanPham([FromBody] CreateSanPhamModel request)

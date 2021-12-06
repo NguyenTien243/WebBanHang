@@ -55,3 +55,7 @@ C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\obj\Debug\net5.0\r
 C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\obj\Debug\net5.0\WebBanHangAPI.pdb
 C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\obj\Debug\net5.0\WebBanHangAPI.genruntimeconfig.cache
 C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\Microsoft.AspNetCore.JsonPatch.dll
+C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\Newtonsoft.Json.Bson.dll
+C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\AutoMapper.dll

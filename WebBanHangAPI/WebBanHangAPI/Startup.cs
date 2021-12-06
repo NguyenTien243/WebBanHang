@@ -35,6 +35,9 @@ namespace WebBanHangAPI
             services.AddDbContext<WebBanHangAPIDBContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("ConnStr")));
             services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(options =>
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                );
             //https://www.youtube.com/watch?v=MBpH8sGqrMs add Cors fix loi request Chorme
             //services.AddCors(options => options.AddDefaultPolicy(builder => builder.WithOrigins("*")));
             services.AddCors();

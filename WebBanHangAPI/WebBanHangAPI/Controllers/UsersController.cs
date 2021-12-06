@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -38,12 +39,21 @@ namespace WebBanHangAPI.Controllers
         {
             return new string[] { "New Jersey", "New Jorl" };
         }
+        [AllowAnonymous]
+
+        [HttpGet("GetHeaderData")]
+        public ActionResult<string> GetHeaderData(string headerKey)
+        {
+            Request.Headers.TryGetValue(headerKey, out var headerValue);
+            return Ok(headerValue);
+        }
         [HttpPost("dangnhap")]
         [AllowAnonymous]
         public async Task<IActionResult> login([FromBody] LoginRequest request)
-       // public IActionResult authenticate([FromBody] LoginRequest user)
+        // public IActionResult authenticate([FromBody] LoginRequest user)
         {
-            if(request.tenDangNhap == null || request.tenDangNhap.Length==0)
+            Request.Headers.TryGetValue("abc", out var headerValue);
+            if (request.tenDangNhap == null || request.tenDangNhap.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "Chưa nhập tên đăng nhập" });
             if (request.matKhau == null || request.matKhau.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "Chưa nhập mật khẩu" });
@@ -80,7 +90,7 @@ namespace WebBanHangAPI.Controllers
         {
             if (request.email == null || request.email.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "Email bắt buộc" });
-            
+
             if (!isEmail(request.email))
                 return BadRequest(new Response { Status = 400, Message = "Sai định dạng Email" });
             if (request.tenDangNhap == null || request.tenDangNhap.Length == 0)
@@ -95,11 +105,11 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "mật khẩu bắt buộc, tối thiểu 8 ký tự" });
             if (request.xacNhanMatKhau == null || request.xacNhanMatKhau.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "xác nhận mật khẩu bắt buộc" });
-            if (request.xacNhanMatKhau.Trim() !=  request.matKhau.Trim())
+            if (request.xacNhanMatKhau.Trim() != request.matKhau.Trim())
                 return BadRequest(new Response { Status = 400, Message = "mật khẩu xác nhận không trùng" });
             if (request.tenDangNhap == null || request.tenDangNhap.Length == 0)
                 return BadRequest(new Response { Status = 400, Message = "Tên đăng nhập bắt buộc" });
-            var finduser = await _context.NguoiDungs.Where(u => u.tenDangNhap == request.tenDangNhap ).ToListAsync();
+            var finduser = await _context.NguoiDungs.Where(u => u.tenDangNhap == request.tenDangNhap).ToListAsync();
             if (finduser.Count != 0)
                 return BadRequest(new Response { Status = 400, Message = "Tên đăng nhập đã tồn tại, vui lòng chọn tài khoản khác" });
             var findemail = await _context.NguoiDungs.Where(u => u.email == request.email).ToListAsync();
@@ -151,5 +161,25 @@ namespace WebBanHangAPI.Controllers
         //    var tokena = JwtSecurityTokenHandler().WriteToken(token);
         //    return Ok();
         //}
+
+        [HttpGet("laydanhsachKhachHang")]
+        public async Task<IActionResult> GetNguoiDungs()
+        {
+          
+            var listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.VaiTro.tenVaiTro == "customer").Select(nd => new NguoiDungModel{NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung,VaiTroId =nd.VaiTroId }).ToListAsync();
+            
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
+        }
+
+        [HttpGet("laydanhsachNhanVien")]
+        public async Task<IActionResult> GetNhanViens()
+        {
+           
+            var listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.VaiTro.tenVaiTro == "staff").Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
+
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
+        }
+
+
     }
 }
