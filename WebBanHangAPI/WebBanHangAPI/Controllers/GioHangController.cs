@@ -41,7 +41,7 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
             }
             NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
-            var cart = await _context.NguoiDungs.Include(p => p.GioHangs).ThenInclude(t => t.SanPham).Where(s => s.NguoiDungId == NguoiDungId).Select(nd => nd.GioHangs.Select(sl => new ItemGioHang() { SanPhamId = sl.SanPhamId, giamGia = sl.SanPham.giamGia,giaTien = sl.SanPham.giaTien,hinhAnh = sl.SanPham.hinhAnh,LoaiSanPhamId = sl.SanPham.LoaiSanPhamId,soLuongConLai = sl.SanPham.soLuongConLai,SoLuongTrongGio = sl.soLuong })).ToListAsync();
+            var cart = await _context.NguoiDungs.Include(p => p.GioHangs).ThenInclude(t => t.SanPham).Where(s => s.NguoiDungId == NguoiDungId).Select(nd => nd.GioHangs.Select(sl => new ItemGioHang() { SanPhamId = sl.SanPhamId, giamGia = sl.SanPham.giamGia,giaTien = sl.SanPham.giaTien,hinhAnh = sl.SanPham.hinhAnh,LoaiSanPhamId = sl.SanPham.LoaiSanPhamId,soLuongConLai = sl.SanPham.soLuongConLai,SoLuongTrongGio = sl.soLuong,tenSP = sl.SanPham.tenSP })).ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = cart });
         }
 
