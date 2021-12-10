@@ -18,6 +18,7 @@ namespace WebBanHangAPI.Models
         public int    giamGia  { get; set; }
         public string moTa { get; set; }
         public int soLuongConLai { get; set; }
+        public int soLuongDaBan { get; set; }
         public string LoaiSanPhamId { get; set; }
         public LoaiSanPham LoaiSanPham { get; set; }
         [ForeignKey("SanPhamId")]

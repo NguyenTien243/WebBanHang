@@ -17,9 +17,12 @@ namespace WebBanHangAPI.Models
         [Key, Column(Order = 1)]
         public string SanPhamId { get; set; }
         public SanPham SanPham { get; set; }
-        public int soLuong { get; set; }
+        public string tenSP { get; set; }
+        public string hinhAnh { get; set; }
+        public double giaTien { get; set; }
         public int giamGia { get; set; }
-        public int giaTien { get; set; }
-        public int tongTien { get; set; }
+        public int soLuongDat { get; set; }
+        //public string tenLoaiSanPham { get; set; }
+        public double tongTien { get; set; }
     }
 }

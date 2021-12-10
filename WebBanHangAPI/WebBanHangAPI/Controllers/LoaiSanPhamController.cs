@@ -173,7 +173,11 @@ namespace WebBanHangAPI.Controllers
                 }
 
             }
-            
+            else
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy loại sản phẩm!" });
+            }
+
 
             return Ok(new Response { Status = 200, Message = "Deleted" });
         }

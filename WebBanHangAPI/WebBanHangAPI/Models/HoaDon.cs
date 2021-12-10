@@ -18,6 +18,7 @@ namespace WebBanHangAPI.Models
         public double tongHoaDon { get; set; }
         public DateTime ngayXuatDon { get; set; }
         public string diaChiGiaoHang { get; set; }
+        public string sdtNguoiNhan { get; set; }
         public string TrangThaiGiaoHangId { get; set; }
         public TrangThaiGiaoHang TrangThaiGiaoHang { get; set; }
         public bool thanhToanOnline { get; set; }

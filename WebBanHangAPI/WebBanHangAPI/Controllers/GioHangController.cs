@@ -116,51 +116,32 @@ namespace WebBanHangAPI.Controllers
             
         }
 
-        [HttpPut("suaLoaiSP")]
-        public async Task<IActionResult> editLoaiSP([FromBody] EditLoaiSanPhamModel loaisp)
-        {
-            var findLoaiSP = await _context.LoaiSanPhams.FindAsync(loaisp.LoaiSanPhamId);
-            if (findLoaiSP == null)
-            {
-                return NotFound(new Response { Status = 404, Message = "LoaiSanPhamId không tồn tại" });
-            }
-            
-            var checkname = await _context.LoaiSanPhams.Where(s => s.tenLoaiSP == loaisp.tenLoaiSP).ToListAsync();
+        
 
-            if (checkname.Count != 0)
-            {
-                return BadRequest(new Response { Status = 400, Message = "Tên Loại Sản Phẩm đã tồn tại, vui lòng thử tên khác" });
-            }
+        [HttpDelete("xoasanphamtronggiohang/{id}")]
+        public async Task<ActionResult<GioHang>> DeleteLoaiSP(string id)
+        {
+
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
             try
             {
-                findLoaiSP.tenLoaiSP = loaisp.tenLoaiSP;
-                await _context.SaveChangesAsync();
-                loaisp.LoaiSanPhamId = findLoaiSP.LoaiSanPhamId;
-
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
             }
             catch (IndexOutOfRangeException e)
             {
-                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
             }
-            return Ok(new Response { Status = 200, Message = "Updated", Data = loaisp });
-        }
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
 
-        [HttpDelete("deleteLoaiSP/{id}")]
-        public async Task<ActionResult<LoaiSanPham>> DeleteLoaiSP(string id)
-        {
-          
-            var loaiSP = await _context.LoaiSanPhams.FindAsync(id);
-            if (loaiSP != null)
+            var sptronggiohang = await _context.GioHangs.Where(gh => gh.NguoiDungId == NguoiDungId && gh.SanPhamId == id).FirstOrDefaultAsync();
+            if (sptronggiohang != null)
             {
-                var sanphams = await _context.SanPhams.Where(s => s.LoaiSanPhamId == id).ToListAsync();
-                foreach( var item in sanphams)
-                {
-                    item.LoaiSanPhamId = null;
-                }
-                
+                               
                 try
                 {
-                    _context.LoaiSanPhams.Remove(loaiSP);
+                    _context.GioHangs.Remove(sptronggiohang);
                     await _context.SaveChangesAsync();
                 }
                 catch (IndexOutOfRangeException e)
@@ -169,9 +150,13 @@ namespace WebBanHangAPI.Controllers
                 }
 
             }
-            
+            else
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy sản phẩm trong giỏ!" });
+            }
 
-            return Ok(new Response { Status = 200, Message = "Deleted" });
+
+            return Ok(new Response { Status = 200, Message = "Xóa sản phẩm khỏi giỏ hàng thành công" });
         }
 
     }

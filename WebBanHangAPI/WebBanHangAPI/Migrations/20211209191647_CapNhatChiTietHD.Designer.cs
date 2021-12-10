@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebBanHangAPI.Models;
 
 namespace WebBanHangAPI.Migrations
 {
     [DbContext(typeof(WebBanHangAPIDBContext))]
-    partial class WebBanHangAPIDBContextModelSnapshot : ModelSnapshot
+    [Migration("20211209191647_CapNhatChiTietHD")]
+    partial class CapNhatChiTietHD
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,8 +29,8 @@ namespace WebBanHangAPI.Migrations
                     b.Property<string>("SanPhamId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<double>("giaTien")
-                        .HasColumnType("float");
+                    b.Property<int>("giaTien")
+                        .HasColumnType("int");
 
                     b.Property<int>("giamGia")
                         .HasColumnType("int");
@@ -191,9 +193,6 @@ namespace WebBanHangAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("soLuongConLai")
-                        .HasColumnType("int");
-
-                    b.Property<int>("soLuongDaBan")
                         .HasColumnType("int");
 
                     b.Property<string>("tenSP")
