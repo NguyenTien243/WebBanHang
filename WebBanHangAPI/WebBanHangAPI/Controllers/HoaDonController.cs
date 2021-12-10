@@ -27,8 +27,9 @@ namespace WebBanHangAPI.Controllers
             _jwtAuthenticationManager = jwtAuthenticationManager;
 
         }
-        [HttpGet("xemgiohang")]
-        public async Task<IActionResult> Get()
+        [Authorize]
+        [HttpGet("danhsachhoadonNguoiDung")]
+        public async Task<IActionResult> GetAllOfUser()
         {
             var NguoiDungId = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -42,8 +43,91 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
             }
             NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
-            var cart = await _context.NguoiDungs.Include(p => p.GioHangs).ThenInclude(t => t.SanPham).Where(s => s.NguoiDungId == NguoiDungId).Select(nd => nd.GioHangs.Select(sl => new ItemGioHang() { SanPhamId = sl.SanPhamId, giamGia = sl.SanPham.giamGia, giaTien = sl.SanPham.giaTien, hinhAnh = sl.SanPham.hinhAnh, LoaiSanPhamId = sl.SanPham.LoaiSanPhamId, soLuongConLai = sl.SanPham.soLuongConLai, SoLuongTrongGio = sl.soLuong, tenSP = sl.SanPham.tenSP })).ToListAsync();
-            return Ok(new Response { Status = 200, Message = Message.Success, Data = cart });
+            var findHoaDon = await _context.HoaDons.Where(hd => hd.NguoiDungId == NguoiDungId).Select(sl => new ResponseHoaDon()
+            {
+                HoaDonId = sl.HoaDonId,
+                NguoiDungId = sl.NguoiDungId,
+                diaChiGiaoHang = sl.diaChiGiaoHang,
+                daThanhToan = sl.daThanhToan,
+                ngayXuatDon = sl.ngayXuatDon,
+                sdtNguoiNhan = sl.sdtNguoiNhan,
+                thanhToanOnline = sl.thanhToanOnline,
+                tongHoaDon = sl.tongHoaDon,
+                TrangThaiGiaoHangId = sl.TrangThaiGiaoHangId,
+                chiTietHD = sl.ChiTietHDs.Select(ct => new ItemChiTietHD()
+                {
+                    SanPhamId = ct.SanPhamId,
+                    tenSP = ct.tenSP,
+                    hinhAnh = ct.hinhAnh,
+                    giaTien = ct.giaTien,
+                    giamGia = ct.giamGia,
+                    soLuongDat = ct.soLuongDat,
+                    tongTien = ct.tongTien
+                }).ToList()
+            }).ToListAsync();
+            if (findHoaDon.Count == 0)
+                return BadRequest(new Response { Status = 400, Message = "Danh sách hóa đơn trống!" });
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
+        }
+        [HttpGet("danhsachtatcahoadon")]
+        public async Task<IActionResult> GetAll()
+        {
+
+            var findHoaDon = await _context.HoaDons.Select(sl => new ResponseHoaDon()
+            {
+                HoaDonId = sl.HoaDonId,
+                NguoiDungId = sl.NguoiDungId,
+                diaChiGiaoHang = sl.diaChiGiaoHang,
+                daThanhToan = sl.daThanhToan,
+                ngayXuatDon = sl.ngayXuatDon,
+                sdtNguoiNhan = sl.sdtNguoiNhan,
+                thanhToanOnline = sl.thanhToanOnline,
+                tongHoaDon = sl.tongHoaDon,
+                TrangThaiGiaoHangId = sl.TrangThaiGiaoHangId,
+                chiTietHD = sl.ChiTietHDs.Select(ct => new ItemChiTietHD()
+                {
+                    SanPhamId = ct.SanPhamId,
+                    tenSP = ct.tenSP,
+                    hinhAnh = ct.hinhAnh,
+                    giaTien = ct.giaTien,
+                    giamGia = ct.giamGia,
+                    soLuongDat = ct.soLuongDat,
+                    tongTien = ct.tongTien
+                }).ToList()
+            }).ToListAsync();
+            if (findHoaDon.Count == 0)
+                return BadRequest(new Response { Status = 400, Message = "Hóa đơn trống!" });
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
+        }
+        [HttpGet("xemchitiethoadon/{hoadonId}")]
+        public async Task<IActionResult> Get(string hoadonId)
+        {
+
+            var findHoaDon = await _context.HoaDons.Include(hd => hd.ChiTietHDs).Where(hd => hd.HoaDonId == hoadonId).Select(sl => new ResponseHoaDon()
+            {
+                HoaDonId = sl.HoaDonId,
+                NguoiDungId = sl.NguoiDungId,
+                diaChiGiaoHang = sl.diaChiGiaoHang,
+                daThanhToan = sl.daThanhToan,
+                ngayXuatDon = sl.ngayXuatDon,
+                sdtNguoiNhan = sl.sdtNguoiNhan,
+                thanhToanOnline = sl.thanhToanOnline,
+                tongHoaDon = sl.tongHoaDon,
+                TrangThaiGiaoHangId = sl.TrangThaiGiaoHangId,
+                chiTietHD = sl.ChiTietHDs.Select(ct => new ItemChiTietHD()
+                {
+                    SanPhamId = ct.SanPhamId,
+                    tenSP = ct.tenSP,
+                    hinhAnh = ct.hinhAnh,
+                    giaTien = ct.giaTien,
+                    giamGia = ct.giamGia,
+                    soLuongDat = ct.soLuongDat,
+                    tongTien = ct.tongTien
+                }).ToList()
+            }).ToListAsync();
+            if(findHoaDon.Count == 0)
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy hóa đơn!" });
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
         }
 
 
@@ -63,7 +147,7 @@ namespace WebBanHangAPI.Controllers
             result.soLuongDat = soLuongDat;
             result.tongTien = (giaTien * (100 - giamGia) / 100) * soLuongDat;
         }
-        //[Authorize]
+        [Authorize]
         [HttpPost("taohoadon")]
         public async Task<ActionResult<GioHang>> taohoadon([FromBody] RequestOrderModel requestOrder)
         {
