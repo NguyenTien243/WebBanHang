@@ -125,7 +125,7 @@ namespace WebBanHangAPI.Controllers
                     tongTien = ct.tongTien
                 }).ToList()
             }).ToListAsync();
-            if(findHoaDon.Count == 0)
+            if (findHoaDon.Count == 0)
                 return BadRequest(new Response { Status = 400, Message = "Không tìm thấy hóa đơn!" });
             return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
         }
@@ -180,11 +180,11 @@ namespace WebBanHangAPI.Controllers
             hoadon.sdtNguoiNhan = requestOrder.sdtNguoiNhan;
             hoadon.NguoiDungId = NguoiDungId;
             hoadon.TrangThaiGiaoHangId = "1";
-            if(requestOrder.thanhToanOnline)
+            if (requestOrder.thanhToanOnline)
             {
                 hoadon.thanhToanOnline = true;
                 hoadon.daThanhToan = true;
-            }    
+            }
 
             foreach (var item in requestOrder.danhSachDat)
             {
@@ -204,20 +204,110 @@ namespace WebBanHangAPI.Controllers
                 tongHoaDon += chitietdat.tongTien;
             }
             hoadon.tongHoaDon = tongHoaDon;
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (IndexOutOfRangeException e)
-                {
-                    return BadRequest(new Response { Status = 400, Message = e.ToString() });
-                }
-                return Ok(new Response { Status = 200, Message = "Tạo hóa đơn thành công" });
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Tạo hóa đơn thành công" });
+        }
+
+        [Authorize]
+        [HttpPut("capnhattrangthaidonAdmin")]
+        public async Task<IActionResult> PutTrangThai([FromBody] RequestUpdateStatusOrderModel request)
+        {
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin" && NguoiDungRole != "staff")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin hoặc nhận viên!" });
+            var findHoaDon = await _context.HoaDons.FindAsync(request.HoaDonId);
+            if (findHoaDon == null)
+            {
+                return NotFound(new Response { Status = 404, Message = "Không tìm thấy hóa đơn" });
             }
 
+            switch (request.TrangThaiGiaoHangId)
+            {
+                case "3":
+                    if (findHoaDon.TrangThaiGiaoHangId != "1")
+                        return BadRequest(new Response { Status = 400, Message = "Đơn hàng phải ở trạng thái chờ xác nhận trước!" });
+                    break;
+                case "4":
+                    if (findHoaDon.TrangThaiGiaoHangId != "3")
+                        return BadRequest(new Response { Status = 400, Message = "Đơn hàng phải ở trạng thái đang giao trước!" });
+                    break;
+                case "5":
+                    if (findHoaDon.TrangThaiGiaoHangId == "4")
+                        return BadRequest(new Response { Status = 400, Message = "Không thể hủy đơn hàng đã giao!" });
+                    break;
+                default:
+                    // code block
+                    break;
+            }
 
+            try
+            {
+                findHoaDon.TrangThaiGiaoHangId = request.TrangThaiGiaoHangId;
+                await _context.SaveChangesAsync();
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Cập nhật trạng thái giao hàng thành công", Data = request });
+        }
 
+        [Authorize]
+        [HttpPut("nguoidunghuydonhang/{id}")]
+        public async Task<IActionResult> PutTrangThaidon(string id)
+        {
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+            
+            var findHoaDon = await _context.HoaDons.FindAsync(id);
+            if (findHoaDon == null)
+            {
+                return NotFound(new Response { Status = 404, Message = "Không tìm thấy hóa đơn" });
+            }
+            if (NguoiDungId != findHoaDon.NguoiDungId)
+                return BadRequest(new Response { Status = 400, Message = "Hóa đơn yêu cầu hủy không trùng khách hàng Id!" });
+            if(findHoaDon.TrangThaiGiaoHangId != "1")
+                return BadRequest(new Response { Status = 400, Message = "Chỉ có thể hủy đơn hàng đang chờ xác nhận!" });
 
-
+            try
+            {
+                findHoaDon.TrangThaiGiaoHangId = "5";
+                await _context.SaveChangesAsync();
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Hủy đơn hàng thành công" });
         }
     }
+}
