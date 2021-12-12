@@ -292,6 +292,14 @@ namespace WebBanHangAPI.Controllers
                 _context.ChiTietHDs.Add(chitietdat);
                 tongHoaDon += chitietdat.tongTien;
             }
+            // xoa san pham trong gio hang
+            var giohang = await _context.GioHangs.Where(gh => gh.NguoiDungId == NguoiDungId  ).ToListAsync();
+            foreach (var item in giohang)
+            {
+                if (requestOrder.danhSachDat.Any(order => order.SanPhamId == item.SanPhamId))
+                    _context.GioHangs.Remove(item);
+            }
+
             hoadon.tongHoaDon = tongHoaDon;
             try
             {
