@@ -129,6 +129,95 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "Không tìm thấy hóa đơn!" });
             return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
         }
+        [Authorize]
+        [HttpGet("Xemhoadontheotrangthaiadmin/{TrangThaiGiaoHangId}")]
+        public async Task<IActionResult> Getall(string TrangThaiGiaoHangId)
+        {
+            var NguoiDungId = "";
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin" && NguoiDungRole != "staff")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin hoặc nhận viên!" });
+
+            var findHoaDon = await _context.HoaDons.Include(hd => hd.ChiTietHDs).Where(hd => hd.TrangThaiGiaoHangId == TrangThaiGiaoHangId ).Select(sl => new ResponseHoaDon()
+            {
+                HoaDonId = sl.HoaDonId,
+                NguoiDungId = sl.NguoiDungId,
+                diaChiGiaoHang = sl.diaChiGiaoHang,
+                daThanhToan = sl.daThanhToan,
+                ngayXuatDon = sl.ngayXuatDon,
+                sdtNguoiNhan = sl.sdtNguoiNhan,
+                thanhToanOnline = sl.thanhToanOnline,
+                tongHoaDon = sl.tongHoaDon,
+                TrangThaiGiaoHangId = sl.TrangThaiGiaoHangId,
+                chiTietHD = sl.ChiTietHDs.Select(ct => new ItemChiTietHD()
+                {
+                    SanPhamId = ct.SanPhamId,
+                    tenSP = ct.tenSP,
+                    hinhAnh = ct.hinhAnh,
+                    giaTien = ct.giaTien,
+                    giamGia = ct.giamGia,
+                    soLuongDat = ct.soLuongDat,
+                    tongTien = ct.tongTien
+                }).ToList()
+            }).ToListAsync();
+            if (findHoaDon.Count == 0)
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy hóa đơn!" });
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
+        }
+        [Authorize]
+        [HttpGet("Xemhoadontheotrangthaicuanguoidung/{TrangThaiGiaoHangId}")]
+        public async Task<IActionResult> Getallnguoidung(string TrangThaiGiaoHangId)
+        {
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+            var findHoaDon = await _context.HoaDons.Include(hd => hd.ChiTietHDs).Where(hd => hd.TrangThaiGiaoHangId == TrangThaiGiaoHangId && hd.NguoiDungId == NguoiDungId).Select(sl => new ResponseHoaDon()
+            {
+                HoaDonId = sl.HoaDonId,
+                NguoiDungId = sl.NguoiDungId,
+                diaChiGiaoHang = sl.diaChiGiaoHang,
+                daThanhToan = sl.daThanhToan,
+                ngayXuatDon = sl.ngayXuatDon,
+                sdtNguoiNhan = sl.sdtNguoiNhan,
+                thanhToanOnline = sl.thanhToanOnline,
+                tongHoaDon = sl.tongHoaDon,
+                TrangThaiGiaoHangId = sl.TrangThaiGiaoHangId,
+                chiTietHD = sl.ChiTietHDs.Select(ct => new ItemChiTietHD()
+                {
+                    SanPhamId = ct.SanPhamId,
+                    tenSP = ct.tenSP,
+                    hinhAnh = ct.hinhAnh,
+                    giaTien = ct.giaTien,
+                    giamGia = ct.giamGia,
+                    soLuongDat = ct.soLuongDat,
+                    tongTien = ct.tongTien
+                }).ToList()
+            }).ToListAsync();
+            if (findHoaDon.Count == 0)
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy hóa đơn!" });
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
+        }
 
 
         //tạo hóa đơn
