@@ -349,6 +349,15 @@ namespace WebBanHangAPI.Controllers
                 case "5":
                     if (findHoaDon.TrangThaiGiaoHangId == "4")
                         return BadRequest(new Response { Status = 400, Message = "Không thể hủy đơn hàng đã giao!" });
+                    var findCTHoaDon = await _context.ChiTietHDs.Where(hd => hd.HoaDonId == findHoaDon.HoaDonId).ToListAsync();
+                    List<string> ListIdSP = findCTHoaDon.Select(o => o.SanPhamId).ToList();
+                    var listSP = _context.SanPhams.Where(e => ListIdSP.Contains(e.SanPhamId));
+                    Dictionary<string, int> soluongdat = findCTHoaDon.ToDictionary(x => x.SanPhamId, x => x.soLuongDat);
+                    foreach (var item in listSP)
+                    {
+                        item.soLuongConLai += soluongdat[item.SanPhamId];
+                        item.soLuongDaBan -= soluongdat[item.SanPhamId];
+                    }
                     break;
                 default:
                     // code block
@@ -394,7 +403,15 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "Hóa đơn yêu cầu hủy không trùng khách hàng Id!" });
             if(findHoaDon.TrangThaiGiaoHangId != "1")
                 return BadRequest(new Response { Status = 400, Message = "Chỉ có thể hủy đơn hàng đang chờ xác nhận!" });
-
+            var findCTHoaDon = await _context.ChiTietHDs.Where(hd => hd.HoaDonId == findHoaDon.HoaDonId).ToListAsync();
+            List<string> ListIdSP = findCTHoaDon.Select(o => o.SanPhamId).ToList();
+            var listSP = _context.SanPhams.Where(e => ListIdSP.Contains(e.SanPhamId));
+            Dictionary<string, int> soluongdat = findCTHoaDon.ToDictionary(x => x.SanPhamId, x => x.soLuongDat);
+            foreach (var item in listSP)
+            {
+                item.soLuongConLai += soluongdat[item.SanPhamId];
+                item.soLuongDaBan -= soluongdat[item.SanPhamId];
+            }
             try
             {
                 findHoaDon.TrangThaiGiaoHangId = "5";
