@@ -27,6 +27,84 @@ namespace WebBanHangAPI.Controllers
             _jwtAuthenticationManager = jwtAuthenticationManager;
 
         }
+
+        //[Authorize]
+        [HttpGet("thongketrangthaidonhang")]
+        public async Task<IActionResult> Get()
+        {
+            //var NguoiDungRole = "";
+            //Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            //JwtSecurityToken token = null;
+            //try
+            //{
+            //    token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            //}
+            //catch (IndexOutOfRangeException e)
+            //{
+            //    return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            //}
+            //NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            //if (NguoiDungRole != "admin")
+            //    return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
+            var trangthai = await _context.HoaDons.GroupBy(gr => gr.TrangThaiGiaoHangId).OrderBy(o => o.Key).Select(m => new { TrangThaiGiaoHangId = m.Key, soLuongHoaDon = m.Count() }).ToListAsync();//.grop(o => o.ngayXuatDon.Month);
+            //if (trangthai.Count == 4)
+            //    return Ok(new Response { Status = 200, Message = Message.Success, Data = trangthai });
+
+           
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = trangthai });
+        }
+
+        [Authorize]
+        [HttpGet("thongkedoanhthutheothang")]
+        public async Task<IActionResult> Geta()
+        {
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
+            var doanhthu = await _context.HoaDons.Where(s => s.TrangThaiGiaoHangId == "4").GroupBy(gr => gr.ngayXuatDon.Month).OrderBy(o => o.Key).Select(m => new { thang =m.Key,tongDoanhThu = m.Sum(s=> s.tongHoaDon) }).ToListAsync();//.grop(o => o.ngayXuatDon.Month);//Select(sl => new ThongKeSanPhamModel()
+            //{
+            //    SanPhamId = sl.SanPhamId,
+            //    tenSP = sl.tenSP,
+            //    hinhAnh = sl.hinhAnh,
+            //    soLuongDaBan = sl.soLuongDaBan
+            //}).OrderByDescending(t => t.soLuongDaBan).Take(soluong).ToListAsync();
+            if (doanhthu.Count == 12)
+                return Ok(new Response { Status = 200, Message = Message.Success, Data = doanhthu });
+
+            List<ThongKeDoanhThuModel> response = new List<ThongKeDoanhThuModel>();
+            // kiểm tra nếu tháng không có doanh thu thì thêm danh thu = 0 vào tháng đó
+
+
+            for (int i = 0; i < 12; i++)
+            {
+                ThongKeDoanhThuModel tk = new ThongKeDoanhThuModel();
+                if (doanhthu.Any(x => x.thang == i+1))
+                {
+                    var d = doanhthu.Where(x => x.thang == i + 1).FirstOrDefault();
+                    tk.thang = d.thang;
+                    tk.tongDoanhThu = d.tongDoanhThu;
+                }
+                else
+                {
+                    tk.thang = i + 1;
+                    tk.tongDoanhThu = 0;
+                }
+                response.Add(tk);
+            }
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = response });
+        }
+
         [Authorize]
         [HttpGet("danhsachhoadonNguoiDung")]
         public async Task<IActionResult> GetAllOfUser()

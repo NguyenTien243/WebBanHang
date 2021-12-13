@@ -37,6 +37,28 @@ namespace WebBanHangAPI.Controllers
                 return NotFound(new Response { Status = 404, Message = "Không tìm thấy sản phẩm" });
             return Ok(new Response { Status = 200, Message = Message.Success, Data = sp });
         }
+        [Authorize]
+        [HttpGet("topsanphambanchay/{soluong}")]
+        public async Task<IActionResult> Get(int soluong)
+        {
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
+            var listsp = await _context.SanPhams.Where(s => s.isDeleted == false).Select(sl => new ThongKeSanPhamModel() { 
+            SanPhamId = sl.SanPhamId, tenSP = sl.tenSP, hinhAnh = sl.hinhAnh, soLuongDaBan = sl.soLuongDaBan }).OrderByDescending(t => t.soLuongDaBan).Take(soluong).ToListAsync();
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = listsp });
+        }
         [HttpGet("laydanhsachSP")]
         public async Task<IActionResult> Get()
         {
