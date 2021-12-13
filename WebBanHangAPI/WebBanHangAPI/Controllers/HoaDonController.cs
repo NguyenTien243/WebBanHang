@@ -78,6 +78,7 @@ namespace WebBanHangAPI.Controllers
                 HoaDonId = sl.HoaDonId,
                 NguoiDungId = sl.NguoiDungId,
                 diaChiGiaoHang = sl.diaChiGiaoHang,
+                tenNguoiDung = sl.NguoiDung.tenNguoiDung,
                 daThanhToan = sl.daThanhToan,
                 ngayXuatDon = sl.ngayXuatDon,
                 sdtNguoiNhan = sl.sdtNguoiNhan,
@@ -154,6 +155,7 @@ namespace WebBanHangAPI.Controllers
             {
                 HoaDonId = sl.HoaDonId,
                 NguoiDungId = sl.NguoiDungId,
+                tenNguoiDung = sl.NguoiDung.tenNguoiDung,
                 diaChiGiaoHang = sl.diaChiGiaoHang,
                 daThanhToan = sl.daThanhToan,
                 ngayXuatDon = sl.ngayXuatDon,
@@ -347,6 +349,7 @@ namespace WebBanHangAPI.Controllers
                 case "4":
                     if (findHoaDon.TrangThaiGiaoHangId != "3")
                         return BadRequest(new Response { Status = 400, Message = "Đơn hàng phải ở trạng thái đang giao trước!" });
+                    findHoaDon.daThanhToan = true;
                     break;
                 case "5":
                     if (findHoaDon.TrangThaiGiaoHangId == "4")

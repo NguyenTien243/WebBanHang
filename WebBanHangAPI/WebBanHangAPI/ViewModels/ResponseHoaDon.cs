@@ -9,6 +9,7 @@ namespace WebBanHangAPI.ViewModels
     {
         public string HoaDonId { get; set; }
         public string NguoiDungId { get; set; }
+        public string tenNguoiDung { get; set; }
         public double tongHoaDon { get; set; }
         public DateTime ngayXuatDon { get; set; }
         public string diaChiGiaoHang { get; set; }
