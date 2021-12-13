@@ -54,25 +54,26 @@ namespace WebBanHangAPI.Controllers
             return Ok(new Response { Status = 200, Message = Message.Success, Data = trangthai });
         }
 
-        [Authorize]
-        [HttpGet("thongkedoanhthutheothang")]
-        public async Task<IActionResult> Geta()
+        //[Authorize]
+        [HttpGet("thongkedoanhthutheothang/{nam}")]
+        public async Task<IActionResult> Geta(int nam)
         {
-            var NguoiDungRole = "";
-            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
-            JwtSecurityToken token = null;
-            try
-            {
-                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
-            }
-            catch (IndexOutOfRangeException e)
-            {
-                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
-            }
-            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
-            if (NguoiDungRole != "admin")
-                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
-            var doanhthu = await _context.HoaDons.Where(s => s.TrangThaiGiaoHangId == "4").GroupBy(gr => gr.ngayXuatDon.Month).OrderBy(o => o.Key).Select(m => new { thang =m.Key,tongDoanhThu = m.Sum(s=> s.tongHoaDon) }).ToListAsync();//.grop(o => o.ngayXuatDon.Month);//Select(sl => new ThongKeSanPhamModel()
+            
+            //var NguoiDungRole = "";
+            //Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            //JwtSecurityToken token = null;
+            //try
+            //{
+            //    token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            //}
+            //catch (IndexOutOfRangeException e)
+            //{
+            //    return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            //}
+            //NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            //if (NguoiDungRole != "admin")
+            //    return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
+            var doanhthu = await _context.HoaDons.Where(s => s.TrangThaiGiaoHangId == "4" && s.ngayXuatDon.Year == nam).GroupBy(gr => gr.ngayXuatDon.Month).OrderBy(o => o.Key).Select(m => new { thang =m.Key,tongDoanhThu = m.Sum(s=> s.tongHoaDon) }).ToListAsync();//.grop(o => o.ngayXuatDon.Month);//Select(sl => new ThongKeSanPhamModel()
             //{
             //    SanPhamId = sl.SanPhamId,
             //    tenSP = sl.tenSP,
