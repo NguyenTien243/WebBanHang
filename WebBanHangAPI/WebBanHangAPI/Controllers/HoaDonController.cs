@@ -47,6 +47,7 @@ namespace WebBanHangAPI.Controllers
             {
                 HoaDonId = sl.HoaDonId,
                 NguoiDungId = sl.NguoiDungId,
+                tenNguoiDung = sl.NguoiDung.tenNguoiDung,
                 diaChiGiaoHang = sl.diaChiGiaoHang,
                 daThanhToan = sl.daThanhToan,
                 ngayXuatDon = sl.ngayXuatDon,
@@ -108,6 +109,7 @@ namespace WebBanHangAPI.Controllers
             {
                 HoaDonId = sl.HoaDonId,
                 NguoiDungId = sl.NguoiDungId,
+                tenNguoiDung = sl.NguoiDung.tenNguoiDung,
                 diaChiGiaoHang = sl.diaChiGiaoHang,
                 daThanhToan = sl.daThanhToan,
                 ngayXuatDon = sl.ngayXuatDon,
@@ -198,6 +200,7 @@ namespace WebBanHangAPI.Controllers
             {
                 HoaDonId = sl.HoaDonId,
                 NguoiDungId = sl.NguoiDungId,
+                tenNguoiDung = sl.NguoiDung.tenNguoiDung,
                 diaChiGiaoHang = sl.diaChiGiaoHang,
                 daThanhToan = sl.daThanhToan,
                 ngayXuatDon = sl.ngayXuatDon,
