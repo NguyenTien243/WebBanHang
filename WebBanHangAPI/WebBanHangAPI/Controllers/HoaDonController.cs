@@ -173,7 +173,7 @@ namespace WebBanHangAPI.Controllers
                 }).ToList()
             }).ToListAsync();
             if (findHoaDon.Count == 0)
-                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy hóa đơn!" });
+                return BadRequest(new Response { Status = 400, Message = "Chưa có đơn hàng!" });
             return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
         }
         [Authorize]
@@ -215,7 +215,7 @@ namespace WebBanHangAPI.Controllers
                 }).ToList()
             }).ToListAsync();
             if (findHoaDon.Count == 0)
-                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy hóa đơn!" });
+                return BadRequest(new Response { Status = 400, Message = "Chưa có đơn hàng!" });
             return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
         }
 
@@ -240,6 +240,8 @@ namespace WebBanHangAPI.Controllers
         [HttpPost("taohoadon")]
         public async Task<ActionResult<GioHang>> taohoadon([FromBody] RequestOrderModel requestOrder)
         {
+            if(requestOrder.danhSachDat.Count ==0)
+                return BadRequest(new Response { Status = 400, Message = "Danh sách đặt trống!" });
             if (string.IsNullOrEmpty(requestOrder.diaChiGiaoHang))
                 return BadRequest(new Response { Status = 400, Message = "Thiếu địa chỉ giao hàng!" });
             if (string.IsNullOrEmpty(requestOrder.sdtNguoiNhan))
