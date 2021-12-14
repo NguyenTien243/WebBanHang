@@ -123,6 +123,7 @@ namespace WebBanHangAPI.Controllers
             nguoiDung.tenDangNhap = request.tenDangNhap;
             nguoiDung.matKhau = request.matKhau;
             nguoiDung.VaiTroId = "3";
+            nguoiDung.conHoatDong = true;
 
             try
             {
@@ -190,6 +191,7 @@ namespace WebBanHangAPI.Controllers
             nguoiDung.tenDangNhap = request.tenDangNhap;
             nguoiDung.matKhau = request.matKhau;
             nguoiDung.VaiTroId = "2";
+            nguoiDung.conHoatDong = true;
 
             try
             {
@@ -202,70 +204,106 @@ namespace WebBanHangAPI.Controllers
             }
             return Ok(new Response { Status = 200, Message = "Tạo tài khoản thành công" });
         }
-        //[Authorize]
-        //[HttpPut("suathongtinUser")]
-        //public async Task<IActionResult> PutSP([FromBody] EditSanPhamModel request)
-        //{
-        //    var NguoiDungRole = "";
-        //    Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
-        //    JwtSecurityToken token = null;
-        //    try
-        //    {
-        //        token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
-        //    }
-        //    catch (IndexOutOfRangeException e)
-        //    {
-        //        return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
-        //    }
-        //    NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
-        //    if (NguoiDungRole != "admin")
-        //        return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
-        //    if (request.tenSP == null || request.tenSP.Length == 0)
-        //        return BadRequest(new Response { Status = 400, Message = "Chưa nhập tên sản phẩm" });
-        //    if (request.giaTien == null || request.giaTien < 0)
-        //        return BadRequest(new Response { Status = 400, Message = "Nhập giá tiền >= 0" });
-        //    if (request.giamGia == null || request.giamGia < 0 || request.giamGia > 100)
-        //        return BadRequest(new Response { Status = 400, Message = "Nhập giảm giá >= 0 và <= 100 " });
-        //    if (request.moTa == null || request.moTa.Length == 0)
-        //        return BadRequest(new Response { Status = 400, Message = "Nhập mô tả!" });
-        //    if (request.soLuongConLai == null || request.soLuongConLai < 0)
-        //        return BadRequest(new Response { Status = 400, Message = "Nhập Số lượng còn lại >= 0" });
-        //    if (request.LoaiSanPhamId == null || request.LoaiSanPhamId.Length == 0)
-        //        return BadRequest(new Response { Status = 400, Message = "Chưa Có Loại sản phẩm (thiếu loaiSanPhamId)!" });
-        //    var findSP = await _context.SanPhams.FindAsync(request.SanPhamId);
-        //    if (findSP == null)
-        //        return BadRequest(new Response { Status = 400, Message = "Không tìm thấy sản phẩm" });
-        //    var findLoaiSP = await _context.LoaiSanPhams.FindAsync(request.LoaiSanPhamId);
-        //    if (findLoaiSP == null)
-        //    {
-        //        return NotFound(new Response { Status = 404, Message = "LoaiSanPhamId không tồn tại" });
-        //    }
+        [Authorize]
+        [HttpPut("khachhangcapnhatthongtin")]
+        public async Task<IActionResult> UpdateUser([FromBody] EditNguoiDungModel request)
+        {
+            var NguoiDungRole = "";
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+            if (NguoiDungRole != "customer")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản Khách hàng!" });
+            if (string.IsNullOrEmpty(request.tenNguoiDung))
+                return BadRequest(new Response { Status = 400, Message = "Tên người dùng không được bỏ trống!" });
+            if (string.IsNullOrEmpty(request.diaChi))
+                return BadRequest(new Response { Status = 400, Message = "Địa chỉ không được bỏ trống" });
+            if (string.IsNullOrEmpty(request.email))
+                return BadRequest(new Response { Status = 400, Message = "Email không được bỏ trống!" });
+            if (string.IsNullOrEmpty(request.sDT))
+                return BadRequest(new Response { Status = 400, Message = "Số điện thoại không được bỏ trống" });
 
-        //    var checkname = await _context.SanPhams.Where(s => s.tenSP == request.tenSP && s.SanPhamId != request.SanPhamId).ToListAsync();
+            if (!isEmail(request.email))
+                return BadRequest(new Response { Status = 400, Message = "Sai định dạng Email" });
+            var findUser = await _context.NguoiDungs.FindAsync(NguoiDungId);
+            if (findUser == null)
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy người dùng!" });
+            
+            try
+            {
+                findUser.tenNguoiDung = request.tenNguoiDung;
+                findUser.diaChi = request.diaChi;
+                findUser.email = request.email;
+                findUser.sDT = request.sDT;
+                await _context.SaveChangesAsync();
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Cập nhật thông tin thành công", Data = request });
+        }
 
-        //    if (checkname.Count != 0)
-        //    {
-        //        return BadRequest(new Response { Status = 400, Message = "Tên Sản Phẩm đã tồn tại, vui lòng thử tên khác" });
-        //    }
-        //    try
-        //    {
-        //        findSP.tenSP = request.tenSP;
-        //        findSP.hinhAnh = request.hinhAnh;
-        //        findSP.giaTien = request.giaTien;
-        //        findSP.giamGia = request.giamGia;
-        //        findSP.moTa = request.moTa;
-        //        findSP.soLuongConLai = request.soLuongConLai;
-        //        findSP.LoaiSanPhamId = request.LoaiSanPhamId;
-        //        await _context.SaveChangesAsync();
+        [Authorize]
+        [HttpPut("AdminsuathongtinNhanVienKhachHang")]
+        public async Task<IActionResult> UpdateStaff([FromBody] AdminEditNguoiDungModel request)
+        {
+            var NguoiDungRole = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            if (NguoiDungRole != "admin")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
+            if (string.IsNullOrEmpty(request.NguoiDungId))
+                return BadRequest(new Response { Status = 400, Message = "Thiếu người dùng Id!" });
+            if (string.IsNullOrEmpty(request.tenNguoiDung))
+                return BadRequest(new Response { Status = 400, Message = "Tên người dùng không được bỏ trống!" });
+            if (string.IsNullOrEmpty(request.diaChi))
+                return BadRequest(new Response { Status = 400, Message = "Địa chỉ không được bỏ trống" });
+            if (string.IsNullOrEmpty(request.email))
+                return BadRequest(new Response { Status = 400, Message = "Email không được bỏ trống!" });
+            if (string.IsNullOrEmpty(request.sDT))
+                return BadRequest(new Response { Status = 400, Message = "Số điện thoại không được bỏ trống" });
 
+            if (!isEmail(request.email))
+                return BadRequest(new Response { Status = 400, Message = "Sai định dạng Email" });
+            var NguoiDungId = request.NguoiDungId;
+            var findUser = await _context.NguoiDungs.FindAsync(NguoiDungId);
+            if (findUser == null)
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy người dùng!" });
 
-        //    }
-        //    catch (IndexOutOfRangeException e)
-        //    {
-        //        return BadRequest(new Response { Status = 400, Message = e.ToString() });
-        //    }
-        //    return Ok(new Response { Status = 200, Message = "Updated", Data = request });
-        //}
+            try
+            {
+                findUser.tenNguoiDung = request.tenNguoiDung;
+                findUser.diaChi = request.diaChi;
+                findUser.email = request.email;
+                findUser.sDT = request.sDT;
+                await _context.SaveChangesAsync();
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Cập nhật thông tin thành công", Data = request });
+        }
         //[HttpPost("login")]
         //[AllowAnonymous]
         //public async Task<IActionResult> Authenticate([FromBody] LoginRequest request)

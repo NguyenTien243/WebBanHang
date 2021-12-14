@@ -25,7 +25,10 @@ namespace WebBanHangAPI.Models
         [ForeignKey("NguoiDungId")]
         public ICollection<GioHang> GioHangs { get; set; }
 
-        [ForeignKey("NguoiDungId")]
+        [InverseProperty("NguoiDung")]
         public ICollection<HoaDon> HoaDonsKhachHang { get; set; }
+        [InverseProperty("NhanVien")]
+        public ICollection<HoaDon> HoaDonsNhanVien { get; set; }
+        //https://stackoverflow.com/questions/30717484/entity-framework-multiple-references-to-same-table
     }
 }
