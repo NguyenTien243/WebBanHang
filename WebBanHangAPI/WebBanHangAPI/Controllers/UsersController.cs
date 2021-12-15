@@ -330,6 +330,28 @@ namespace WebBanHangAPI.Controllers
         //    var tokena = JwtSecurityTokenHandler().WriteToken(token);
         //    return Ok();
         //}
+        [Authorize]
+        [HttpGet("xemthongtinnguoidung")]
+        public async Task<IActionResult> GetNguoiDung()
+        {
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+
+            var user = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.NguoiDungId == NguoiDungId).Select(nd => new ThongTinNguoiDungModel { NguoiDungId = nd.NguoiDungId, VaiTro = nd.VaiTro.tenVaiTro, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung,VaiTroId = nd.VaiTroId  }).ToListAsync();
+            if (user.Count == 0)
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy thông tin người dùng!" });
+            return Ok(new Response { Status = 200, Message = Message.Success, Data = user });
+        }
 
         [HttpGet("laydanhsachKhachHang")]
         public async Task<IActionResult> GetNguoiDungs()
