@@ -20,6 +20,7 @@ namespace WebBanHangAPI.Models
         public string tenDangNhap { get; set; }
         public string matKhau { get; set; }
         public string VaiTroId { get; set; }
+        public bool daXoa { get; set; }
         public VaiTro VaiTro { get; set; }
         public bool conHoatDong { get; set; }
         [ForeignKey("NguoiDungId")]

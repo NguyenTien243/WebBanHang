@@ -44,7 +44,7 @@ namespace WebBanHangAPI.Controllers
         [HttpGet("GetHeaderData")]
         public ActionResult<string> GetHeaderData(string headerKey)
         {
-            
+
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
             JwtSecurityToken token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
             var NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
@@ -238,7 +238,7 @@ namespace WebBanHangAPI.Controllers
             var findUser = await _context.NguoiDungs.FindAsync(NguoiDungId);
             if (findUser == null)
                 return BadRequest(new Response { Status = 400, Message = "Không tìm thấy người dùng!" });
-            
+
             try
             {
                 findUser.tenNguoiDung = request.tenNguoiDung;
@@ -347,32 +347,32 @@ namespace WebBanHangAPI.Controllers
             }
             NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
 
-            var user = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.NguoiDungId == NguoiDungId).Select(nd => new ThongTinNguoiDungModel { NguoiDungId = nd.NguoiDungId, VaiTro = nd.VaiTro.tenVaiTro, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung,VaiTroId = nd.VaiTroId  }).ToListAsync();
+            var user = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.NguoiDungId == NguoiDungId).Select(nd => new ThongTinNguoiDungModel { NguoiDungId = nd.NguoiDungId, VaiTro = nd.VaiTro.tenVaiTro, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
             if (user.Count == 0)
                 return BadRequest(new Response { Status = 400, Message = "Không tìm thấy thông tin người dùng!" });
             return Ok(new Response { Status = 200, Message = Message.Success, Data = user });
         }
-
+      
         [HttpGet("laydanhsachKhachHang")]
         public async Task<IActionResult> GetNguoiDungs()
         {
-          
-            var listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.VaiTro.tenVaiTro == "customer").Select(nd => new NguoiDungModel{NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung,VaiTroId =nd.VaiTroId }).ToListAsync();
-            
+
+            var listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.VaiTro.tenVaiTro == "customer" && s.daXoa == false).Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
+
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
         }
-
+        
         [HttpGet("laydanhsachNhanVien")]
         public async Task<IActionResult> GetNhanViens()
         {
-           
-            var listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.VaiTro.tenVaiTro == "staff").Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
+
+            var listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.VaiTro.tenVaiTro == "staff" && s.daXoa == false).Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
 
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
         }
 
         [HttpPost("doimatkhau")]
-        public async Task<IActionResult> doimatkhau([FromBody] EditPassword request )
+        public async Task<IActionResult> doimatkhau([FromBody] EditPassword request)
         {
 
             if (request.matKhauHienTai == null || request.matKhauHienTai.Trim().Length == 0)
@@ -384,7 +384,7 @@ namespace WebBanHangAPI.Controllers
             if (request.matKhauMoi.Length < 8)
                 return BadRequest(new Response { Status = 400, Message = "Mật khẩu mới tối thiểu 8 ký tự" });
             if (request.xacNhanMatKhauMoi != request.matKhauMoi)
-                    return BadRequest(new Response { Status = 400, Message = "Mật khẩu xác nhận không trùng" });
+                return BadRequest(new Response { Status = 400, Message = "Mật khẩu xác nhận không trùng" });
             var NguoiDungId = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
             JwtSecurityToken token = null;
@@ -403,7 +403,7 @@ namespace WebBanHangAPI.Controllers
             {
                 return NotFound(new Response { Status = 404, Message = "Không tìm thấy người dùng" });
             }
-            if(findUser.matKhau != request.matKhauHienTai)
+            if (findUser.matKhau != request.matKhauHienTai)
                 return BadRequest(new Response { Status = 400, Message = "Mật khẩu hiện tại không đúng!" });
 
             try
@@ -416,8 +416,50 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = e.ToString() });
             }
             return Ok(new Response { Status = 200, Message = "Cập nhật mật khẩu thành công", Data = null });
-           
+
         }
 
+        //[Authorize]
+        [AllowAnonymous]
+        [HttpDelete("xoaNguoiDung/{id}")]
+        public async Task<IActionResult> DeleteNguoiDung(string id)
+        {
+            //var NguoiDungRole = "";
+            //Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            //JwtSecurityToken token = null;
+            //try
+            //{
+            //    token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            //}
+            //catch (IndexOutOfRangeException e)
+            //{
+            //    return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            //}
+            //NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
+            //if (NguoiDungRole != "admin")
+            //    return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
+            var user = await _context.NguoiDungs.FindAsync(id);
+            if (user != null)
+            {
+                user.daXoa = true;
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (IndexOutOfRangeException e)
+                {
+                    return BadRequest(new Response { Status = 400, Message = e.ToString() });
+                }
+            }
+            else
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy người dùng!" });
+            }
+            return Ok(new Response { Status = 200, Message = "Xóa thành công" });
+        }
+
+
     }
+
+
 }
