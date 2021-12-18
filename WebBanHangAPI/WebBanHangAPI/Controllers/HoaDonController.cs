@@ -370,7 +370,7 @@ namespace WebBanHangAPI.Controllers
                 if (sp.soLuongConLai < item.soLuongDat)
                     return BadRequest(new Response { Status = 400, Message = $"Sản phẩm id = {item.SanPhamId} không đủ số lượng để đặt, số lượng tối đa có thể đặt {sp.soLuongConLai}" });
                 sp.soLuongConLai -= item.soLuongDat;
-                sp.soLuongDaBan += item.soLuongDat;
+                //sp.soLuongDaBan += item.soLuongDat;
                 ChiTietHD chitietdat = new ChiTietHD();
                 chitietdat.HoaDonId = hoadon.HoaDonId;
                 chitietdat.SanPhamId = sp.SanPhamId;
@@ -432,6 +432,15 @@ namespace WebBanHangAPI.Controllers
                     if (findHoaDon.TrangThaiGiaoHangId != "3")
                         return BadRequest(new Response { Status = 400, Message = "Đơn hàng phải ở trạng thái đang giao trước!" });
                     findHoaDon.daThanhToan = true;
+                    var findCTHoaDon2 = await _context.ChiTietHDs.Where(hd => hd.HoaDonId == findHoaDon.HoaDonId).ToListAsync();
+                    List<string> ListIdSP2 = findCTHoaDon2.Select(o => o.SanPhamId).ToList();
+                    var listSP2 = _context.SanPhams.Where(e => ListIdSP2.Contains(e.SanPhamId));
+                    Dictionary<string, int> soluongdat2 = findCTHoaDon2.ToDictionary(x => x.SanPhamId, x => x.soLuongDat);
+                    foreach (var item in listSP2)
+                    {
+                        
+                        item.soLuongDaBan += soluongdat2[item.SanPhamId];
+                    }
                     break;
                 case "5":
                     if (findHoaDon.TrangThaiGiaoHangId == "4")
@@ -443,7 +452,7 @@ namespace WebBanHangAPI.Controllers
                     foreach (var item in listSP)
                     {
                         item.soLuongConLai += soluongdat[item.SanPhamId];
-                        item.soLuongDaBan -= soluongdat[item.SanPhamId];
+                        //item.soLuongDaBan -= soluongdat[item.SanPhamId];
                     }
                     break;
                 default:
