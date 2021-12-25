@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+//using System.Net.Mail;
 using System.Threading.Tasks;
 using WebBanHangAPI.IServices;
 using WebBanHangAPI.Models;
+using MailKit.Net.Smtp;
+using WebBanHangAPI.ViewModels;
 
 namespace WebBanHangAPI.Controllers
 {
@@ -14,12 +18,13 @@ namespace WebBanHangAPI.Controllers
     [ApiController]
     public class NameController : ControllerBase
     {
-        private readonly ICustomAuthenticationManager customAuthenticationManager;
 
-        public NameController(WebBanHangAPIDBContext context, ICustomAuthenticationManager customAuthenticationManager)
+        private readonly IMailService _mailService;
+        public NameController(WebBanHangAPIDBContext context, IMailService mailService)
+        //public NameController(WebBanHangAPIDBContext context, ICustomAuthenticationManager customAuthenticationManager)
         {
-           
-            this.customAuthenticationManager = customAuthenticationManager;
+            _mailService = mailService;
+        //    this.customAuthenticationManager = customAuthenticationManager;
 
         }
         [Authorize]
@@ -29,14 +34,48 @@ namespace WebBanHangAPI.Controllers
         {
             return new string[] { "New Jersey", "New Jorl" };
         }
-        [HttpPost("authenticate")]
-        public IActionResult Authenticate([FromBody] NguoiDung user)
+        [HttpPost("sendEmailChinhThuc")]
+        public async Task<IActionResult> SendMail2([FromForm] MailRequest request)
         {
-            var token = customAuthenticationManager.Authenticate
-                (user.tenDangNhap, user.matKhau);
-            if (token == null)
-                return Unauthorized();
-            return Ok(token);
+            try
+            {
+                await _mailService.SendEmailAsync(request);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
+       
+        [HttpGet("sendmail")]
+        public IEnumerable<string> SendMail()
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Nguyen Tien", "ptshopk18@gmail.com"));
+            message.To.Add(new MailboxAddress("Nguyễn Tiến", "nguyenquoctien243@gmail.com"));
+            message.Subject = "test mail in asp.net core";
+            message.Body = new TextPart("plain")
+            {
+                Text = "hêloo word mail"
+            };
+            using (var client = new SmtpClient())
+            {
+                client.Connect("smtp.gmail.com", 587, false);
+                client.Authenticate("ptshopk18@gmail.com", "TienTien2");
+                client.Send(message);
+                client.Disconnect(true);
+            }    
+            return new string[] { "New Jersey", "New Jorl" };
+        }
+        //[HttpPost("authenticate")]
+        //public IActionResult Authenticate([FromBody] NguoiDung user)
+        //{
+        //    var token = customAuthenticationManager.Authenticate
+        //        (user.tenDangNhap, user.matKhau);
+        //    if (token == null)
+        //        return Unauthorized();
+        //    return Ok(token);
+        //}
     }
 }

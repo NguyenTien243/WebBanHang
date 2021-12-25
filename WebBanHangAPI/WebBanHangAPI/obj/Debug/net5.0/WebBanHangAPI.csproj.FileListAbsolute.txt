@@ -59,3 +59,7 @@ C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\M
 C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\Newtonsoft.Json.Bson.dll
 C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\AutoMapper.dll
+C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\MailKit.dll
+C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\MimeKit.dll
+C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\BouncyCastle.Crypto.dll
+C:\Users\Admin\Desktop\WebBanHang\WebBanHangAPI\WebBanHangAPI\bin\Debug\net5.0\NETCore.MailKit.dll
