@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -25,14 +26,16 @@ namespace WebBanHangAPI.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private readonly IMailService _mailService;
         private readonly WebBanHangAPIDBContext _context;
         private readonly IConfiguration _configuration;
         private readonly IJwtAuthenticationManager _jwtAuthenticationManager;
-        public UsersController(WebBanHangAPIDBContext context, IConfiguration config, IJwtAuthenticationManager jwtAuthenticationManager)
+        public UsersController(WebBanHangAPIDBContext context, IConfiguration config, IJwtAuthenticationManager jwtAuthenticationManager, IMailService mailService)
         {
             _context = context;
             _configuration = config;
             _jwtAuthenticationManager = jwtAuthenticationManager;
+            _mailService = mailService;
         }
         [HttpGet("name")]
         public IEnumerable<string> Get()
@@ -50,6 +53,90 @@ namespace WebBanHangAPI.Controllers
             var NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
             return Ok();
         }
+        [HttpPost("sendEmailResetPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SendEmailResetPassword([FromBody] RequestSendEmaiResetPassword request)
+        // public IActionResult authenticate([FromBody] LoginRequest user)
+        {
+            if(String.IsNullOrEmpty(request.url))
+                return BadRequest(new Response { Status = 400, Message = "Thiếu đường dẫn tới trang Khôi phục mật khẩu!" });
+            if (!isEmail(request.email))
+                return BadRequest(new Response { Status = 400, Message = "Sai định dạng Email" });
+            var finduser = await _context.NguoiDungs.Where(u => u.email == request.email).ToListAsync();
+            if (finduser.Count == 0)
+                return BadRequest(new Response { Status = 400, Message = "Email chưa đăng ký trong hệ thống!" });
+            var vaitro = await _context.VaiTros.Where(u => u.VaiTroId == finduser[0].VaiTroId).ToListAsync();
+            string tenvaitro = "customer";
+            if (vaitro.Count != 0)
+                tenvaitro = vaitro[0].tenVaiTro;
+            var token = _jwtAuthenticationManager.TokenResetPassword(finduser[0], tenvaitro);
+            if (token == null)
+                return Unauthorized();
+            var message = new MailRequest();
+            message.Subject = "Khôi phục mật khẩu";
+            message.ToEmail = request.email;
+            message.Body = $"Xin chào {finduser[0].tenNguoiDung}." +
+                "<br/>" +
+                "Chúng tôi nhận được yêu cầu khôi phục mật khẩu từ bạn. Vui lòng nhấp vào link sau để khôi phục mật khẩu:" + $"{request.url}?token={token}" +
+                "<br/>" +
+                "Yêu cầu khôi phục mật khẩu có hiệu lực trong 5 phút"
+            ;
+            try
+            {
+                await _mailService.SendEmailAsync(message);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return Ok(new Response { Status = 200, Message = "Gửi yêu cầu thành công, vui lòng kiểm tra email" });
+        }
+        [Authorize]
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> resetPassword([FromBody] ResetPasswordModel request)
+        {
+
+            if (request.matKhauMoi == null || request.matKhauMoi.Trim().Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Mật khẩu mới không được bỏ trống!" });
+            if (request.xacNhanMatKhauMoi == null || request.xacNhanMatKhauMoi.Trim().Length == 0)
+                return BadRequest(new Response { Status = 400, Message = "Xác nhận mật khẩu mới không được bỏ trống!" });
+            if (request.matKhauMoi.Length < 8)
+                return BadRequest(new Response { Status = 400, Message = "Mật khẩu mới tối thiểu 8 ký tự" });
+            if (request.xacNhanMatKhauMoi != request.matKhauMoi)
+                return BadRequest(new Response { Status = 400, Message = "Mật khẩu xác nhận không trùng" });
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+
+            var findUser = await _context.NguoiDungs.FindAsync(NguoiDungId);
+            if (findUser == null)
+            {
+                return NotFound(new Response { Status = 404, Message = "Không tìm thấy người dùng" });
+            }
+
+            try
+            {
+                findUser.matKhau = request.matKhauMoi;
+                await _context.SaveChangesAsync();
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Khôi phục mật khẩu thành công", Data = null });
+
+        }
+
         [HttpPost("dangnhap")]
         [AllowAnonymous]
         public async Task<IActionResult> login([FromBody] LoginRequest request)

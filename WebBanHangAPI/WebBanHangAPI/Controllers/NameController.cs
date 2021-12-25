@@ -47,7 +47,31 @@ namespace WebBanHangAPI.Controllers
                 throw ex;
             }
         }
-       
+        [HttpGet("sendmailResetPassword")]
+        public IEnumerable<string> SendMailResetPassword()
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Nguyen Tien", "ptshopk18@gmail.com"));
+            message.To.Add(new MailboxAddress("Nguyễn Tiến", "nguyenquoctien243@gmail.com"));
+            message.Subject = "test mail in asp.net core";
+            message.Body = new TextPart("plain")
+            {
+                Text = "Xin chào Tiến" +
+                "\r\n" +
+                "Vui lòng nhấp vào link sau để khôi phục mật khẩu:"+ "https://www.youtube.com/watch?v=g8Be-jMjqu8"+
+                "\r\n" +
+                "Link có hiệu lực trong 3 phút2"
+
+            };
+            using (var client = new SmtpClient())
+            {
+                client.Connect("smtp.gmail.com", 587, false);
+                client.Authenticate("ptshopk18@gmail.com", "TienTien2");
+                client.Send(message);
+                client.Disconnect(true);
+            }
+            return new string[] { "New Jersey", "New Jorl" };
+        }
         [HttpGet("sendmail")]
         public IEnumerable<string> SendMail()
         {

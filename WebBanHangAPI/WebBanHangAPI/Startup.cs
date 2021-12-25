@@ -63,7 +63,7 @@ namespace WebBanHangAPI
                                   });
             });
 
-            var key = "this is my test key";
+            var key = "daylakeydaylakeydaylakeydaylakeydaylakey";
             // su dung JWTService --> chuyen sang sai CustomAuthentication
             services.AddAuthentication(x =>
             {
@@ -78,7 +78,9 @@ namespace WebBanHangAPI
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 

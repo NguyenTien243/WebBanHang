@@ -35,6 +35,7 @@
           "Microsoft.Extensions.Configuration.FileExtensions": "3.1.15",
           "Microsoft.Extensions.Configuration.Json": "3.1.15",
           "NETCore.MailKit": "2.0.3",
+          "PayPal": "2.0.0-rc2",
           "Swashbuckle.AspNetCore": "5.6.3",
           "System.IdentityModel.Tokens.Jwt": "5.6.0",
           "Microsoft.AspNetCore.Antiforgery": "5.0.0.0",
@@ -341,6 +342,17 @@
         },
         "compile": {
           "lib/netstandard2.0/AutoMapper.dll": {}
+        }
+      },
+      "BraintreeHttp-Dotnet/0.3.0": {
+        "runtime": {
+          "lib/netstandard2.0/BraintreeHttp-Dotnet.dll": {
+            "assemblyVersion": "0.3.0.0",
+            "fileVersion": "0.3.0.0"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/BraintreeHttp-Dotnet.dll": {}
         }
       },
       "MailKit/3.0.0": {
@@ -889,6 +901,20 @@
         },
         "compile": {
           "lib/netstandard2.0/Newtonsoft.Json.Bson.dll": {}
+        }
+      },
+      "PayPal/2.0.0-rc2": {
+        "dependencies": {
+          "BraintreeHttp-Dotnet": "0.3.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Source.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.0.0"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/Source.dll": {}
         }
       },
       "Portable.BouncyCastle/1.9.0": {
@@ -3262,6 +3288,13 @@
       "path": "automapper/10.1.1",
       "hashPath": "automapper.10.1.1.nupkg.sha512"
     },
+    "BraintreeHttp-Dotnet/0.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ARHcstlJ2uRxqJVAxhJ7PJbzsDD9us+docpKHuay6psUVpQJo4cH0negfo8rv/iEakGhx0Rxgp/HUu6ZLa+lsA==",
+      "path": "braintreehttp-dotnet/0.3.0",
+      "hashPath": "braintreehttp-dotnet.0.3.0.nupkg.sha512"
+    },
     "MailKit/3.0.0": {
       "type": "package",
       "serviceable": true,
@@ -3702,6 +3735,13 @@
       "sha512": "sha512-QYFyxhaABwmq3p/21VrZNYvCg3DaEoN/wUuw5nmfAf0X3HLjgupwhkEWdgfb9nvGAUIv3osmZoD3kKl4jxEmYQ==",
       "path": "newtonsoft.json.bson/1.0.2",
       "hashPath": "newtonsoft.json.bson.1.0.2.nupkg.sha512"
+    },
+    "PayPal/2.0.0-rc2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QmsC08dT2Bp4zxsWAXYnnYDL3x870LbC81Hodlmm3Df/WGUOVkcyMSFcTdZ8l0Xw823WW6WgZVl2ZIx7phWuCw==",
+      "path": "paypal/2.0.0-rc2",
+      "hashPath": "paypal.2.0.0-rc2.nupkg.sha512"
     },
     "Portable.BouncyCastle/1.9.0": {
       "type": "package",

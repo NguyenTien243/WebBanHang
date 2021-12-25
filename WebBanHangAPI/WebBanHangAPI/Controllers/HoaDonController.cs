@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BraintreeHttp;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using PayPal.Core;
+using PayPal.v1.Payments;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -21,11 +25,125 @@ namespace WebBanHangAPI.Controllers
 
         private readonly WebBanHangAPIDBContext _context;
         private readonly IJwtAuthenticationManager _jwtAuthenticationManager;
-        public HoaDonController(WebBanHangAPIDBContext context, IJwtAuthenticationManager jwtAuthenticationManager)
+        private readonly string _clientId;
+        private readonly string _secretKey;
+        public double TyGiaUSD = 23300;
+        public HoaDonController(WebBanHangAPIDBContext context, IJwtAuthenticationManager jwtAuthenticationManager, IConfiguration config)
         {
             _context = context;
             _jwtAuthenticationManager = jwtAuthenticationManager;
+            _clientId = config["PaypalSettings:ClientId"];
+            _secretKey = config["PaypalSettings:SecretKey"];
+        }
 
+        [HttpGet("paypal")]
+        public async Task<IActionResult> Getpaypal()
+        {
+            
+            //   
+            var environment = new SandboxEnvironment(_clientId,_secretKey);
+            var client = new PayPalHttpClient(environment);
+            List<ItemGioHang> myCart = new List<ItemGioHang>();
+            ItemGioHang a = new ItemGioHang();
+            ItemGioHang b = new ItemGioHang();
+            a.tenSP = "SP1";
+            b.tenSP = "SP2";
+            a.giaTien = 100000;
+            b.giaTien = 200000;
+            myCart.Add(a);
+            myCart.Add(b);
+            a.SoLuongTrongGio = 1;
+            b.SoLuongTrongGio = 1;
+            #region Create Paypal Order
+            var itemList = new ItemList()
+            {
+                Items = new List<Item>()
+            };
+            //var total = Math.Round(myCart.Sum(p => p.giaTien) / TyGiaUSD,2);
+            var total = 12.87;
+            foreach (var item in myCart)
+            {
+                itemList.Items.Add(new Item()
+                {
+                    Name = item.tenSP,
+                    Currency = "USD",
+                    Price = Math.Round(item.giaTien/TyGiaUSD,2).ToString(),
+                    Quantity = item.SoLuongTrongGio.ToString(),
+                    Sku = "sku",
+                    Tax = "0"
+                });
+            }
+            #endregion
+            var paypalOrderId = DateTime.Now.Ticks;
+            var hostname = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+            var payment = new Payment()
+            {
+                Intent = "sale",
+                Transactions = new List<Transaction>()
+                {
+                    new Transaction()
+                    {
+                        Amount = new Amount()
+                        {
+                            Total = total.ToString(),
+                            Currency = "USD",
+                            Details = new AmountDetails
+                            {
+                                Tax = "0",
+                                Shipping = "0",
+                                Subtotal = total.ToString()
+                            }
+                        },
+                        ItemList = itemList,
+                        Description = $"Invoice #{paypalOrderId}",
+                        InvoiceNumber = paypalOrderId.ToString()
+                    }
+                },
+                RedirectUrls = new RedirectUrls()
+                {
+                    CancelUrl = $"{hostname}",
+                    ReturnUrl = $"https://www.google.com/"
+                },
+                Payer = new Payer()
+                {
+                    PaymentMethod = "paypal"
+                }
+            };
+
+            PaymentCreateRequest request = new PaymentCreateRequest();
+            request.RequestBody(payment);
+
+            try
+            {
+         
+                var response = await client.Execute(request);
+                var statusCode = response.StatusCode;
+                Payment result = response.Result<Payment>();
+
+                var links = result.Links.GetEnumerator();
+                string paypalRedirectUrl = null;
+                while (links.MoveNext())
+                {
+                    LinkDescriptionObject lnk = links.Current;
+                    if (lnk.Rel.ToLower().Trim().Equals("approval_url"))
+                    {
+                        //saving the payapalredirect URL to which user will be redirected for payment  
+                        paypalRedirectUrl = lnk.Href;
+                    }
+                }
+
+                return Redirect(paypalRedirectUrl);
+            }
+            catch (HttpException httpException)
+            {
+                var statusCode = httpException.StatusCode;
+                var debugId = httpException.Headers.GetValues("PayPal-Debug-Id").FirstOrDefault();
+
+                //Process when Checkout with Paypal fails
+                return BadRequest(new Response { Status = 400, Message = httpException.Message.ToString() });
+
+            }
+            return Ok(new Response { Status = 200, Message = Message.Success});
         }
 
         //[Authorize]

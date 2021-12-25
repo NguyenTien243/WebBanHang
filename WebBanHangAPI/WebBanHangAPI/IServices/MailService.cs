@@ -51,7 +51,6 @@ namespace WebBanHangAPI.IServices
             using var smtp = new SmtpClient();
             smtp.Connect(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
             smtp.Authenticate(_mailSettings.Mail.ToString(), _mailSettings.Password.ToString());
-            
             await smtp.SendAsync(email);
             smtp.Disconnect(true);
         }

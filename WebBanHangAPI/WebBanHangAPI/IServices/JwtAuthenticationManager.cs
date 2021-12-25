@@ -69,7 +69,34 @@ namespace WebBanHangAPI.IServices
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token); 
         }
+        //https://www.youtube.com/watch?v=vWkPdurauaA
+        public string TokenResetPassword(NguoiDung nguoidung, string vaitro)
+        {
+            //if (!users.Any(u => u.Key == username && u.Value == password))
+            //{
+            //    return null;
+            //}
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenKey = Encoding.ASCII.GetBytes(key);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim("nguoiDungId", nguoidung.NguoiDungId),
+                    new Claim("tenNguoiDung", nguoidung.tenNguoiDung),
+                    new Claim("diaChi", nguoidung.diaChi),
+                    new Claim("sDT", nguoidung.sDT),
+                    new Claim("email", nguoidung.email),
+                    new Claim("vaiTro", vaitro),
+                }),
+                Expires = DateTime.Now.AddMinutes(5),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey),
+                SecurityAlgorithms.HmacSha256Signature)
+            };
 
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
         public JwtSecurityToken GetInFo(string token)
         {
             var handler = new JwtSecurityTokenHandler();
