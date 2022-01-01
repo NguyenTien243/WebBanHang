@@ -28,7 +28,7 @@ namespace WebBanHangAPI.Controllers
 
         }
         [HttpGet("laydanhsachTrangThaiGiao")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> LayDanhSachTrangThaiGiao()
         {
             var listTrangThaiGiao = await _context.TrangThaiGiaoHangs.ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listTrangThaiGiao });
@@ -36,7 +36,7 @@ namespace WebBanHangAPI.Controllers
         [Authorize]
 
         [HttpPost("themTrangThai")]
-        public async Task<ActionResult<TrangThaiGiaoHang>> themTrangThau(TrangThaiModel request)
+        public async Task<ActionResult<TrangThaiGiaoHang>> ThemTrangThaiGiao(TrangThaiModel request)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -75,7 +75,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpPut("suatentrangthai")]
-        public async Task<IActionResult> editTrangThai([FromBody] TrangThaiModel request)
+        public async Task<IActionResult> SuaTenTrangThai([FromBody] TrangThaiModel request)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);

@@ -15,6 +15,9 @@ using WebBanHangAPI.Common;
 using WebBanHangAPI.IServices;
 using WebBanHangAPI.Models;
 using WebBanHangAPI.ViewModels;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Net.Http;
 
 namespace WebBanHangAPI.Controllers
 {
@@ -36,31 +39,46 @@ namespace WebBanHangAPI.Controllers
             _secretKey = config["PaypalSettings:SecretKey"];
         }
 
-        [HttpGet("paypal")]
-        public async Task<IActionResult> Getpaypal()
+        [HttpPost("ThanhToanPaypal")]
+        public async Task<IActionResult> ThanhToanPaypal([FromBody] ThanhToanPaypalModel requestOrder)
         {
             
-            //   
+            //return Redirect("https://www.google.com/");
+            List<ItemGioHang> myCart = new List<ItemGioHang>();
+            foreach (var item in requestOrder.danhSachDat)
+            {
+                var sp = await _context.SanPhams.FindAsync(item.SanPhamId);
+                if (sp == null)
+                    return NotFound(new Response { Status = 404, Message = $"Không tìm thấy sản phẩm id {item.SanPhamId}" });
+                // kiểm tra số lượng đặt có đủ không
+                if (sp.soLuongConLai < item.soLuongDat)
+                    return BadRequest(new Response { Status = 400, Message = $"Sản phẩm id = {item.SanPhamId} không đủ số lượng để đặt, số lượng tối đa có thể đặt {sp.soLuongConLai}" });
+                ItemGioHang spdatmua = new ItemGioHang();
+                spdatmua.tenSP = sp.tenSP;
+                spdatmua.SoLuongTrongGio = item.soLuongDat;
+                spdatmua.giaTien = (sp.giaTien - sp.giaTien * (100 - sp.giamGia) / 100);
+                myCart.Add(spdatmua);
+            }
             var environment = new SandboxEnvironment(_clientId,_secretKey);
             var client = new PayPalHttpClient(environment);
-            List<ItemGioHang> myCart = new List<ItemGioHang>();
-            ItemGioHang a = new ItemGioHang();
-            ItemGioHang b = new ItemGioHang();
-            a.tenSP = "SP1";
-            b.tenSP = "SP2";
-            a.giaTien = 100000;
-            b.giaTien = 200000;
-            myCart.Add(a);
-            myCart.Add(b);
-            a.SoLuongTrongGio = 1;
-            b.SoLuongTrongGio = 1;
+            
+            //ItemGioHang a = new ItemGioHang();
+            //ItemGioHang b = new ItemGioHang();
+            //a.tenSP = "SP1";
+            //b.tenSP = "SP2";
+            //a.giaTien = 100000;
+            //b.giaTien = 200000;
+            //myCart.Add(a);
+            //myCart.Add(b);
+            //a.SoLuongTrongGio = 1;
+            //b.SoLuongTrongGio = 1;
             #region Create Paypal Order
             var itemList = new ItemList()
             {
                 Items = new List<Item>()
             };
             //var total = Math.Round(myCart.Sum(p => p.giaTien) / TyGiaUSD,2);
-            var total = 12.87;
+            double total = 0;
             foreach (var item in myCart)
             {
                 itemList.Items.Add(new Item()
@@ -72,6 +90,7 @@ namespace WebBanHangAPI.Controllers
                     Sku = "sku",
                     Tax = "0"
                 });
+                total += Math.Round(item.giaTien * item.SoLuongTrongGio / TyGiaUSD, 2);
             }
             #endregion
             var paypalOrderId = DateTime.Now.Ticks;
@@ -102,7 +121,7 @@ namespace WebBanHangAPI.Controllers
                 RedirectUrls = new RedirectUrls()
                 {
                     CancelUrl = $"{hostname}",
-                    ReturnUrl = $"https://www.google.com/"
+                    ReturnUrl = requestOrder.urlRedirect
                 },
                 Payer = new Payer()
                 {
@@ -146,9 +165,121 @@ namespace WebBanHangAPI.Controllers
             return Ok(new Response { Status = 200, Message = Message.Success});
         }
 
+        //[HttpGet("ThanhToanPaypal")]
+        //public async Task<IActionResult> ThanhToanPaypal()
+        //{
+
+        //    //   
+        //    var environment = new SandboxEnvironment(_clientId, _secretKey);
+        //    var client = new PayPalHttpClient(environment);
+        //    List<ItemGioHang> myCart = new List<ItemGioHang>();
+        //    ItemGioHang a = new ItemGioHang();
+        //    ItemGioHang b = new ItemGioHang();
+        //    a.tenSP = "SP1";
+        //    b.tenSP = "SP2";
+        //    a.giaTien = 100000;
+        //    b.giaTien = 200000;
+        //    myCart.Add(a);
+        //    myCart.Add(b);
+        //    a.SoLuongTrongGio = 1;
+        //    b.SoLuongTrongGio = 1;
+        //    #region Create Paypal Order
+        //    var itemList = new ItemList()
+        //    {
+        //        Items = new List<Item>()
+        //    };
+        //    //var total = Math.Round(myCart.Sum(p => p.giaTien) / TyGiaUSD,2);
+        //    var total = 12.87;
+        //    foreach (var item in myCart)
+        //    {
+        //        itemList.Items.Add(new Item()
+        //        {
+        //            Name = item.tenSP,
+        //            Currency = "USD",
+        //            Price = Math.Round(item.giaTien / TyGiaUSD, 2).ToString(),
+        //            Quantity = item.SoLuongTrongGio.ToString(),
+        //            Sku = "sku",
+        //            Tax = "0"
+        //        });
+        //    }
+        //    #endregion
+        //    var paypalOrderId = DateTime.Now.Ticks;
+        //    var hostname = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+        //    var payment = new Payment()
+        //    {
+        //        Intent = "sale",
+        //        Transactions = new List<Transaction>()
+        //        {
+        //            new Transaction()
+        //            {
+        //                Amount = new Amount()
+        //                {
+        //                    Total = total.ToString(),
+        //                    Currency = "USD",
+        //                    Details = new AmountDetails
+        //                    {
+        //                        Tax = "0",
+        //                        Shipping = "0",
+        //                        Subtotal = total.ToString()
+        //                    }
+        //                },
+        //                ItemList = itemList,
+        //                Description = $"Invoice #{paypalOrderId}",
+        //                InvoiceNumber = paypalOrderId.ToString()
+        //            }
+        //        },
+        //        RedirectUrls = new RedirectUrls()
+        //        {
+        //            CancelUrl = $"{hostname}",
+        //            ReturnUrl = $"https://www.google.com/"
+        //        },
+        //        Payer = new Payer()
+        //        {
+        //            PaymentMethod = "paypal"
+        //        }
+        //    };
+
+        //    PaymentCreateRequest request = new PaymentCreateRequest();
+        //    request.RequestBody(payment);
+
+        //    try
+        //    {
+
+        //        var response = await client.Execute(request);
+        //        var statusCode = response.StatusCode;
+        //        Payment result = response.Result<Payment>();
+
+        //        var links = result.Links.GetEnumerator();
+        //        string paypalRedirectUrl = null;
+        //        while (links.MoveNext())
+        //        {
+        //            LinkDescriptionObject lnk = links.Current;
+        //            if (lnk.Rel.ToLower().Trim().Equals("approval_url"))
+        //            {
+        //                //saving the payapalredirect URL to which user will be redirected for payment  
+        //                paypalRedirectUrl = lnk.Href;
+        //            }
+        //        }
+
+        //        return Redirect(paypalRedirectUrl);
+        //    }
+        //    catch (HttpException httpException)
+        //    {
+        //        var statusCode = httpException.StatusCode;
+        //        var debugId = httpException.Headers.GetValues("PayPal-Debug-Id").FirstOrDefault();
+
+        //        //Process when Checkout with Paypal fails
+        //        return BadRequest(new Response { Status = 400, Message = httpException.Message.ToString() });
+
+        //    }
+        //    return Ok(new Response { Status = 200, Message = Message.Success });
+        //}
+
+
+
         //[Authorize]
         [HttpGet("thongketrangthaidonhang")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> ThongKeTrangThaiDonHang()
         {
             //var NguoiDungRole = "";
             //Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -174,7 +305,7 @@ namespace WebBanHangAPI.Controllers
 
         //[Authorize]
         [HttpGet("thongkedoanhthutheothang/{nam}")]
-        public async Task<IActionResult> Geta(int nam)
+        public async Task<IActionResult> ThongKeDoanhThuTheoThang(int nam)
         {
             
             //var NguoiDungRole = "";
@@ -226,7 +357,7 @@ namespace WebBanHangAPI.Controllers
 
         [Authorize]
         [HttpGet("danhsachhoadonNguoiDung")]
-        public async Task<IActionResult> GetAllOfUser()
+        public async Task<IActionResult> DanhSachHoaDonNguoiDung()
         {
             var NguoiDungId = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -268,7 +399,7 @@ namespace WebBanHangAPI.Controllers
             return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
         }
         [HttpGet("danhsachtatcahoadon")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> DanhSachTatCaHoaDon()
         {
 
             var findHoaDon = await _context.HoaDons.Select(sl => new ResponseHoaDon()
@@ -299,7 +430,7 @@ namespace WebBanHangAPI.Controllers
             return Ok(new Response { Status = 200, Message = Message.Success, Data = findHoaDon });
         }
         [HttpGet("xemchitiethoadon/{hoadonId}")]
-        public async Task<IActionResult> Get(string hoadonId)
+        public async Task<IActionResult> XemChiTietHoaDon(string hoadonId)
         {
 
             var findHoaDon = await _context.HoaDons.Include(hd => hd.ChiTietHDs).Where(hd => hd.HoaDonId == hoadonId).Select(sl => new ResponseHoaDon()
@@ -331,7 +462,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpGet("Xemhoadontheotrangthaiadmin/{TrangThaiGiaoHangId}")]
-        public async Task<IActionResult> Getall(string TrangThaiGiaoHangId)
+        public async Task<IActionResult> XemHoaDonTheoTrangThaiAdmin(string TrangThaiGiaoHangId)
         {
             var NguoiDungId = "";
             var NguoiDungRole = "";
@@ -379,7 +510,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpGet("Xemhoadontheotrangthaicuanguoidung/{TrangThaiGiaoHangId}")]
-        public async Task<IActionResult> Getallnguoidung(string TrangThaiGiaoHangId)
+        public async Task<IActionResult> XemHoaDonTheoTrangThaiNguoiDung(string TrangThaiGiaoHangId)
         {
             var NguoiDungId = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -422,6 +553,131 @@ namespace WebBanHangAPI.Controllers
         }
 
 
+        // tham khảo XuanThulap https://www.youtube.com/watch?v=iJlAMzFy4yQ
+        [HttpPost("CheckoutPaypal")]
+        public async Task<IActionResult> CheckoutPaypal(RequestCheckoutPaypalModel request)
+        {
+            if (request.danhSachDat.Count == 0)
+                return BadRequest(new Response { Status = 400, Message = "Danh sách đặt trống!" });
+            if (string.IsNullOrEmpty(request.diaChiGiaoHang))
+                return BadRequest(new Response { Status = 400, Message = "Thiếu địa chỉ giao hàng!" });
+            if (string.IsNullOrEmpty(request.sdtNguoiNhan))
+                return BadRequest(new Response { Status = 400, Message = "Số điện thoại người nhận!" });
+            if (String.IsNullOrEmpty(request.paymentId))
+                return BadRequest(new Response { Status = 400, Message = "Thiếu paymentId" });
+            if (String.IsNullOrEmpty(request.PayerID))
+                return BadRequest(new Response { Status = 400, Message = "Thiếu PayerID" });
+
+            using var httpClient = new System.Net.Http.HttpClient();
+            httpClient.BaseAddress = new Uri("http://example.com/");
+            httpClient.DefaultRequestHeaders
+      .Accept
+      .Add(new MediaTypeWithQualityHeaderValue("application/json"));//ACCEPT header
+
+            var authenticationString = $"AV4JKwmAtMXAawVtRhe-WIC7tg6W3uOWvwok7QPnIdt8HBUWAdC6rnTkR3Kdz__HUFi33TXRBhITkwTT:EKdnQsgfLVcF06apKsJKnXvy01Uj_6hhvQ5UOmd-O5tvPcKw0x9fjUJqQCIeZ-AeJtM_J-oVCRXiF0Vt";
+            var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(authenticationString));
+            var httpMessageRequest = new HttpRequestMessage();
+            httpMessageRequest.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
+            httpMessageRequest.Method = HttpMethod.Post;
+            httpMessageRequest.RequestUri = new Uri("https://api.sandbox.paypal.com/v1/payments/payment/" + request.paymentId + "/execute");
+
+
+
+            //string data = @"{
+            //    ""payer_id"" : ""${}"",
+            //    ""matKhau"" : ""123456""
+            //}";
+
+            string data = "{\r\n                \"" + "payer_id" + "\" : \"" + request.PayerID + "\"   }";
+            var content = new StringContent(data, Encoding.UTF8, "application/json");
+
+            //httpMessageRequest.Headers.Add("User-Agent","Mozilla/5.0");
+            //httpMessageRequest.Headers.Add("Content-Type", "application/json");
+            //var parameters = new List<KeyValuePair<string, string>>();
+            //parameters.Add(new KeyValuePair<string, string>("tenDangNhap", "admin"));
+            //parameters.Add(new KeyValuePair<string, string>("matKhau", "123456"));
+
+
+            //var content = new FormUrlEncodedContent(parameters);
+            httpMessageRequest.Content = content;
+            var httpResponseMessage = await httpClient.SendAsync(httpMessageRequest);
+
+            if (httpResponseMessage.StatusCode != System.Net.HttpStatusCode.OK)
+                return BadRequest(new Response { Status = 400, Message = "Thanh toán lỗi, vui lòng thử lại!" });
+
+            // check out thành công tiến hành lưu lại hóa đơn
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+            double tongHoaDon = 0;
+
+            var findUser = await _context.NguoiDungs.FindAsync(NguoiDungId);
+            if (findUser == null)
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy Người dùng" });
+            //1. Add vào hóa đơn
+            var hoadon = new HoaDon();
+            _context.HoaDons.Add(hoadon);
+            hoadon.ngayXuatDon = DateTime.Now;
+            hoadon.diaChiGiaoHang = request.diaChiGiaoHang;
+            hoadon.sdtNguoiNhan = request.sdtNguoiNhan;
+            hoadon.NguoiDungId = NguoiDungId;
+            hoadon.TrangThaiGiaoHangId = "1";
+            //if (request.thanhToanOnline)
+            //{
+            //    hoadon.thanhToanOnline = true;
+            //    hoadon.daThanhToan = true;
+            //}
+            hoadon.thanhToanOnline = true;
+            hoadon.daThanhToan = true;
+            foreach (var item in request.danhSachDat)
+            {
+                var sp = await _context.SanPhams.FindAsync(item.SanPhamId);
+                if (sp == null)
+                    return NotFound(new Response { Status = 404, Message = $"Không tìm thấy sản phẩm id {item.SanPhamId}" });
+                // kiểm tra số lượng đặt có đủ không
+                if (sp.soLuongConLai < item.soLuongDat)
+                    return BadRequest(new Response { Status = 400, Message = $"Sản phẩm id = {item.SanPhamId} không đủ số lượng để đặt, số lượng tối đa có thể đặt {sp.soLuongConLai}" });
+                sp.soLuongConLai -= item.soLuongDat;
+                //sp.soLuongDaBan += item.soLuongDat;
+                ChiTietHD chitietdat = new ChiTietHD();
+                chitietdat.HoaDonId = hoadon.HoaDonId;
+                chitietdat.SanPhamId = sp.SanPhamId;
+                SetValuesChitietHD(ref chitietdat, sp.tenSP, sp.hinhAnh, sp.giamGia, sp.giaTien, item.soLuongDat);
+                _context.ChiTietHDs.Add(chitietdat);
+                tongHoaDon += chitietdat.tongTien;
+            }
+            // xoa san pham trong gio hang
+            var giohang = await _context.GioHangs.Where(gh => gh.NguoiDungId == NguoiDungId).ToListAsync();
+            foreach (var item in giohang)
+            {
+                if (request.danhSachDat.Any(order => order.SanPhamId == item.SanPhamId))
+                    _context.GioHangs.Remove(item);
+            }
+
+            hoadon.tongHoaDon = tongHoaDon;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Tạo hóa đơn thành công" });
+
+            //var html = await httpResponseMessage.Content.ReadAsStringAsync();
+
+        }
+
         //tạo hóa đơn
         //1. Add vào hóa đơn
         //2. Thêm sản phẩm vào chi tiết hóa đơn (kiểm tra số lượng đặt, 
@@ -440,7 +696,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpPost("taohoadon")]
-        public async Task<ActionResult<GioHang>> taohoadon([FromBody] RequestOrderModel requestOrder)
+        public async Task<ActionResult<GioHang>> TaoHoaDon([FromBody] RequestOrderModel requestOrder)
         {
             if(requestOrder.danhSachDat.Count ==0)
                 return BadRequest(new Response { Status = 400, Message = "Danh sách đặt trống!" });
@@ -518,7 +774,7 @@ namespace WebBanHangAPI.Controllers
 
         [Authorize]
         [HttpPut("capnhattrangthaidonAdmin")]
-        public async Task<IActionResult> PutTrangThai([FromBody] RequestUpdateStatusOrderModel request)
+        public async Task<IActionResult> CapNhatTrangThaiDonAdmin([FromBody] RequestUpdateStatusOrderModel request)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -592,7 +848,7 @@ namespace WebBanHangAPI.Controllers
 
         [Authorize]
         [HttpPut("nguoidunghuydonhang/{id}")]
-        public async Task<IActionResult> PutTrangThaidon(string id)
+        public async Task<IActionResult> NguoiDungHuyDonHang(string id)
         {
             var NguoiDungId = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);

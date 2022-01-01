@@ -29,7 +29,7 @@ namespace WebBanHangAPI.Controllers
 
         }
         [HttpGet("laydanhsachVaiTro")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> LayDanhSachVaiTro()
         {
             var listvaitro = await _context.VaiTros.ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listvaitro });
@@ -37,7 +37,7 @@ namespace WebBanHangAPI.Controllers
         [Authorize]
 
         [HttpPost("themVaiTro")]
-        public async Task<ActionResult<VaiTro>> themvaitro(VaiTroModel request)
+        public async Task<ActionResult<VaiTro>> ThemVaiTro(VaiTroModel request)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -77,7 +77,7 @@ namespace WebBanHangAPI.Controllers
         [Authorize]
 
         [HttpPut("suatenvaitro")]
-        public async Task<IActionResult> editvaitro([FromBody] VaiTroModel request)
+        public async Task<IActionResult> SuaVaiTro([FromBody] VaiTroModel request)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -124,7 +124,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpDelete("deleteVaiTro/{id}")]
-        public async Task<ActionResult<VaiTro>> DeleteLoaiSP(string id)
+        public async Task<ActionResult<VaiTro>> XoaVaiTro(string id)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);

@@ -55,7 +55,7 @@ namespace WebBanHangAPI.Controllers
         }
         [HttpPost("sendEmailResetPassword")]
         [AllowAnonymous]
-        public async Task<IActionResult> SendEmailResetPassword([FromBody] RequestSendEmaiResetPassword request)
+        public async Task<IActionResult> GuiEmailKhoiPhucMatKhau([FromBody] RequestSendEmaiResetPassword request)
         // public IActionResult authenticate([FromBody] LoginRequest user)
         {
             if(String.IsNullOrEmpty(request.url))
@@ -94,7 +94,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpPost("ResetPassword")]
-        public async Task<IActionResult> resetPassword([FromBody] ResetPasswordModel request)
+        public async Task<IActionResult> KhoiPhucMatKhau([FromBody] ResetPasswordModel request)
         {
 
             if (request.matKhauMoi == null || request.matKhauMoi.Trim().Length == 0)
@@ -139,7 +139,7 @@ namespace WebBanHangAPI.Controllers
 
         [HttpPost("dangnhap")]
         [AllowAnonymous]
-        public async Task<IActionResult> login([FromBody] LoginRequest request)
+        public async Task<IActionResult> DangNhap([FromBody] LoginRequest request)
         // public IActionResult authenticate([FromBody] LoginRequest user)
         {
             if (string.IsNullOrEmpty(request.tenDangNhap))
@@ -172,7 +172,7 @@ namespace WebBanHangAPI.Controllers
         }
         [HttpPost("dangky")]
         [AllowAnonymous]
-        public async Task<IActionResult> register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> DangKy([FromBody] RegisterRequest request)
         // public IActionResult authenticate([FromBody] LoginRequest user)
         {
             if (request.email == null || request.email.Length == 0)
@@ -226,7 +226,7 @@ namespace WebBanHangAPI.Controllers
 
         [Authorize]
         [HttpPost("dangkyNhanVien")]
-        public async Task<IActionResult> registerStaff([FromBody] RegisterRequest request)
+        public async Task<IActionResult> DangKyNhanVien([FromBody] RegisterRequest request)
         // public IActionResult authenticate([FromBody] LoginRequest user)
         {
             var NguoiDungRole = "";
@@ -293,7 +293,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpPut("khachhangcapnhatthongtin")]
-        public async Task<IActionResult> UpdateUser([FromBody] EditNguoiDungModel request)
+        public async Task<IActionResult> KHCapNhatThongTin([FromBody] EditNguoiDungModel request)
         {
             var NguoiDungRole = "";
             var NguoiDungId = "";
@@ -343,7 +343,7 @@ namespace WebBanHangAPI.Controllers
 
         [Authorize]
         [HttpPut("AdminsuathongtinNhanVienKhachHang")]
-        public async Task<IActionResult> UpdateStaff([FromBody] AdminEditNguoiDungModel request)
+        public async Task<IActionResult> AdminCapNhatNhanVienKhachHang([FromBody] AdminEditNguoiDungModel request)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -419,7 +419,7 @@ namespace WebBanHangAPI.Controllers
         //}
         [Authorize]
         [HttpGet("xemthongtinnguoidung")]
-        public async Task<IActionResult> GetNguoiDung()
+        public async Task<IActionResult> XemThongTinNguoiDung()
         {
             var NguoiDungId = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -441,7 +441,7 @@ namespace WebBanHangAPI.Controllers
         }
       
         [HttpGet("laydanhsachKhachHang")]
-        public async Task<IActionResult> GetNguoiDungs()
+        public async Task<IActionResult> LayDanhSachKhachHang()
         {
 
             var listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.VaiTro.tenVaiTro == "customer" && s.daXoa == false).Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
@@ -450,7 +450,7 @@ namespace WebBanHangAPI.Controllers
         }
         
         [HttpGet("laydanhsachNhanVien")]
-        public async Task<IActionResult> GetNhanViens()
+        public async Task<IActionResult> LayDanhSachNhanVien()
         {
 
             var listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.VaiTro.tenVaiTro == "staff" && s.daXoa == false).Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
@@ -459,7 +459,7 @@ namespace WebBanHangAPI.Controllers
         }
 
         [HttpPost("doimatkhau")]
-        public async Task<IActionResult> doimatkhau([FromBody] EditPassword request)
+        public async Task<IActionResult> DoiMatKhau([FromBody] EditPassword request)
         {
 
             if (request.matKhauHienTai == null || request.matKhauHienTai.Trim().Length == 0)
@@ -509,7 +509,7 @@ namespace WebBanHangAPI.Controllers
         //[Authorize]
         [AllowAnonymous]
         [HttpDelete("xoaNguoiDung/{id}")]
-        public async Task<IActionResult> DeleteNguoiDung(string id)
+        public async Task<IActionResult> XoaNguoiDung(string id)
         {
             //var NguoiDungRole = "";
             //Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);

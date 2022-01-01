@@ -28,7 +28,7 @@ namespace WebBanHangAPI.Controllers
         }
 
         [HttpGet("laySanPhamById/{id}")]
-        public async Task<IActionResult> Getbyid(string id)
+        public async Task<IActionResult> LaySPTheoId(string id)
         {
             if (id.Length == 0 || id == null)
                 return BadRequest(new Response { Status = 400, Message = "Thiếu Id sản phẩm!" });
@@ -39,7 +39,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpGet("topsanphambanchay/{soluong}")]
-        public async Task<IActionResult> Get(int soluong)
+        public async Task<IActionResult> TopSPBanChay(int soluong)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -60,19 +60,19 @@ namespace WebBanHangAPI.Controllers
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listsp });
         }
         [HttpGet("laydanhsachSP")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> LayDanhSachSP()
         {
             var listsp = await _context.SanPhams.Where(s => s.isDeleted == false).ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listsp });
         }
         [HttpGet("timkiemsanphamtheoten/{name}")]
-        public async Task<IActionResult> SearchSP(string name)
+        public async Task<IActionResult> TimKiemSanPhamTheoTen(string name)
         {
             var findsanphams = await _context.SanPhams.Where(s => s.tenSP.Contains(name.Trim()) && s.isDeleted == false).ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = findsanphams });
         }
         [HttpGet("laysptheoLoaisanpham/{id}")]
-        public async Task<IActionResult> GetSP(string id)
+        public async Task<IActionResult> LaySPTheoLoaiSP(string id)
         {
             var findsanphams = await _context.SanPhams.Where(s => s.LoaiSanPhamId == id && s.isDeleted == false).ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = findsanphams });
@@ -80,7 +80,7 @@ namespace WebBanHangAPI.Controllers
         [Authorize]
 
         [HttpPost("themSP")]
-        public async Task<ActionResult<SanPham>> themSanPham([FromBody] CreateSanPhamModel request)
+        public async Task<ActionResult<SanPham>> ThemSP([FromBody] CreateSanPhamModel request)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -134,7 +134,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpPut("suaSP")]
-        public async Task<IActionResult> PutSP([FromBody] EditSanPhamModel request)
+        public async Task<IActionResult> CapNhatSP([FromBody] EditSanPhamModel request)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -198,7 +198,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpDelete("deleteSP/{id}")]
-        public async Task<ActionResult<SanPham>> DeleteSP(string id)
+        public async Task<ActionResult<SanPham>> XoaSP(string id)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);

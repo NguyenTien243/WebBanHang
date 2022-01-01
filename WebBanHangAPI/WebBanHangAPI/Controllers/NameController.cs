@@ -11,6 +11,10 @@ using WebBanHangAPI.IServices;
 using WebBanHangAPI.Models;
 using MailKit.Net.Smtp;
 using WebBanHangAPI.ViewModels;
+using System.Net.Http;
+using WebBanHangAPI.Common;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace WebBanHangAPI.Controllers
 {
@@ -27,13 +31,29 @@ namespace WebBanHangAPI.Controllers
         //    this.customAuthenticationManager = customAuthenticationManager;
 
         }
-        [Authorize]
+        //[Authorize]
 
-        [HttpGet("name")]
-        public IEnumerable<string> Get()
+        [HttpGet("GetMethod")]
+        public async Task<IActionResult> GetAsync(string url)
         {
-            return new string[] { "New Jersey", "New Jorl" };
+            using (HttpClient client = new HttpClient())
+            {
+                using(HttpResponseMessage response = await client.GetAsync(url))
+                {
+                    using(HttpContent content = response.Content)
+                    {
+                        string mycontent = await content.ReadAsStringAsync();
+                        return Ok(new Response() { Data = Newtonsoft.Json.Linq.JObject.Parse(mycontent) }); 
+                     
+                    }  
+                }    
+                ;
+            };    
+            //return new string[] { "New Jersey", "New Jorl" };
         }
+        
+
+
         [HttpPost("sendEmailChinhThuc")]
         public async Task<IActionResult> SendMail2([FromForm] MailRequest request)
         {

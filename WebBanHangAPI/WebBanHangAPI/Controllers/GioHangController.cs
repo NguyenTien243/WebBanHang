@@ -29,7 +29,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpGet("xemgiohang")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> XemGioHang()
         {
             var NguoiDungId = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -50,7 +50,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpPost("themspvaogiohang")]
-        public async Task<ActionResult<GioHang>> themSanPhamVaoGio(GioHangModel request)
+        public async Task<ActionResult<GioHang>> ThemSPVaoGioHang(GioHangModel request)
         {
             var NguoiDungId = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -121,7 +121,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpPost("giamsoluongtronggiohang")]
-        public async Task<ActionResult<GioHang>> giamSanPhamTrongGio(GioHangModel request)
+        public async Task<ActionResult<GioHang>> GiamSoLuongSPTrongGio(GioHangModel request)
         {
             var NguoiDungId = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -175,7 +175,7 @@ namespace WebBanHangAPI.Controllers
 
         [Authorize]
         [HttpDelete("xoasanphamtronggiohang/{id}")]
-        public async Task<ActionResult<GioHang>> DeleteLoaiSP(string id)
+        public async Task<ActionResult<GioHang>> XoaSPTrongGioHang(string id)
         {
 
             var NguoiDungId = "";

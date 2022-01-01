@@ -31,13 +31,13 @@ namespace WebBanHangAPI.Controllers
     
 
         [HttpGet("laydanhsachLoaiSP")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> LayDanhSachLoaiSP()
         {
             var listloaisp = await _context.LoaiSanPhams.ToListAsync();
             return Ok(new Response { Status = 200, Message = Message.Success, Data = listloaisp });
         }
         [HttpGet("layLoaiSPById/{id}")]
-        public async Task<IActionResult> Getbyid(string id)
+        public async Task<IActionResult> LayLoaiSPTheoId(string id)
         {
             if(id.Length==0 || id == null)
                 return BadRequest(new Response { Status = 400, Message = "Thiếu Id loại sản phẩm!" });
@@ -48,7 +48,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpPost("themloaiSP")]
-        public async Task<ActionResult<LoaiSanPham>> themLoaiSanPham(LoaiSanPhamModel loaiSanPham)
+        public async Task<ActionResult<LoaiSanPham>> ThemLoaiSP(LoaiSanPhamModel loaiSanPham)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -89,7 +89,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpPut("suaLoaiSP")]
-        public async Task<IActionResult> editLoaiSP([FromBody] EditLoaiSanPhamModel loaisp)
+        public async Task<IActionResult> SuaLoaiSP([FromBody] EditLoaiSanPhamModel loaisp)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
@@ -137,7 +137,7 @@ namespace WebBanHangAPI.Controllers
         }
         [Authorize]
         [HttpDelete("deleteLoaiSP/{id}")]
-        public async Task<ActionResult<LoaiSanPham>> DeleteLoaiSP(string id)
+        public async Task<ActionResult<LoaiSanPham>> XoaLoaiSP(string id)
         {
             var NguoiDungRole = "";
             Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
