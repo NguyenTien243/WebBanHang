@@ -131,7 +131,7 @@ namespace WebBanHangAPI.Controllers
 
             PaymentCreateRequest request = new PaymentCreateRequest();
             request.RequestBody(payment);
-
+            string paypalRedirectUrl = null;
             try
             {
          
@@ -140,7 +140,7 @@ namespace WebBanHangAPI.Controllers
                 Payment result = response.Result<Payment>();
 
                 var links = result.Links.GetEnumerator();
-                string paypalRedirectUrl = null;
+                
                 while (links.MoveNext())
                 {
                     LinkDescriptionObject lnk = links.Current;
@@ -151,7 +151,7 @@ namespace WebBanHangAPI.Controllers
                     }
                 }
 
-                return Redirect(paypalRedirectUrl);
+               // return Redirect(paypalRedirectUrl);
             }
             catch (HttpException httpException)
             {
@@ -162,7 +162,7 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = httpException.Message.ToString() });
 
             }
-            return Ok(new Response { Status = 200, Message = Message.Success});
+            return Ok(new Response { Status = 200, Message = Message.Success,Data = paypalRedirectUrl });
         }
 
         //[HttpGet("ThanhToanPaypal")]
