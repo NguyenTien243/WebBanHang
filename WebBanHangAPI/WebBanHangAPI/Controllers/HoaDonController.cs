@@ -56,7 +56,7 @@ namespace WebBanHangAPI.Controllers
                 ItemGioHang spdatmua = new ItemGioHang();
                 spdatmua.tenSP = sp.tenSP;
                 spdatmua.SoLuongTrongGio = item.soLuongDat;
-                spdatmua.giaTien = (sp.giaTien - sp.giaTien * (100 - sp.giamGia) / 100);
+                spdatmua.giaTien = sp.giaTien * (100 - sp.giamGia) / 100;
                 myCart.Add(spdatmua);
             }
             var environment = new SandboxEnvironment(_clientId,_secretKey);
@@ -90,8 +90,10 @@ namespace WebBanHangAPI.Controllers
                     Sku = "sku",
                     Tax = "0"
                 });
-                total += Math.Round(item.giaTien * item.SoLuongTrongGio / TyGiaUSD, 2);
+                double c =  Math.Round(item.giaTien * item.SoLuongTrongGio / TyGiaUSD, 2);
+                total += c;
             }
+            total = Math.Round(total, 2);
             #endregion
             var paypalOrderId = DateTime.Now.Ticks;
             var hostname = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
