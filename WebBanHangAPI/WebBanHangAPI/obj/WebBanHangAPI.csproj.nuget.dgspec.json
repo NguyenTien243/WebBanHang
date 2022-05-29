@@ -1,23 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Admin\\Desktop\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\WebBanHangAPI.csproj": {}
+    "C:\\Users\\Admin\\Desktop\\Working\\KLTN\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\WebBanHangAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Admin\\Desktop\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\WebBanHangAPI.csproj": {
+    "C:\\Users\\Admin\\Desktop\\Working\\KLTN\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\WebBanHangAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\WebBanHangAPI.csproj",
+        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\Working\\KLTN\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\WebBanHangAPI.csproj",
         "projectName": "WebBanHangAPI",
-        "projectPath": "C:\\Users\\Admin\\Desktop\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\WebBanHangAPI.csproj",
+        "projectPath": "C:\\Users\\Admin\\Desktop\\Working\\KLTN\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\WebBanHangAPI.csproj",
         "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admin\\Desktop\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\obj\\",
+        "outputPath": "C:\\Users\\Admin\\Desktop\\Working\\KLTN\\WebBanHang\\WebBanHangAPI\\WebBanHangAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Microsoft\\Xamarin\\NuGet\\"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
         ],
         "configFilePaths": [
           "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
@@ -90,6 +92,18 @@
               "target": "Package",
               "version": "[2.0.0-rc2, )"
             },
+            "Sek.Module.Payment.VnPay.AspNetCore": {
+              "target": "Package",
+              "version": "[1.0.0, )"
+            },
+            "Sek.Module.Payment.VnPay.Common": {
+              "target": "Package",
+              "version": "[1.0.0, )"
+            },
+            "Sek.Module.Payment.VnPay.Core": {
+              "target": "Package",
+              "version": "[1.0.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[5.6.3, )"
@@ -117,7 +131,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.102\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
         }
       }
     }
