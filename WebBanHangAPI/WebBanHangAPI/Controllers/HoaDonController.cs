@@ -281,7 +281,7 @@ namespace WebBanHangAPI.Controllers
         //    }
         //    return Ok(new Response { Status = 200, Message = Message.Success });
         //}
-
+        [Authorize]
         [HttpPost("ThanhToanVNPay")]
         public async Task<IActionResult> ThanhToanVNPay([FromBody] ThanhToanVnPayModel requestOrder)
         {
@@ -376,6 +376,82 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = e.ToString() });
             }
 
+            // tạo request VNPAY
+            VnPayLibrary pay = new VnPayLibrary();
+            pay.AddRequestData("vnp_Version", "2.1.0"); //Phiên bản api mà merchant kết nối. Phiên bản hiện tại là 2.1.0
+            pay.AddRequestData("vnp_Command", "pay"); //Mã API sử dụng, mã cho giao dịch thanh toán là 'pay'
+            pay.AddRequestData("vnp_TmnCode", vnp_TmnCode); //Mã website của merchant trên hệ thống của VNPAY (khi đăng ký tài khoản sẽ có trong mail VNPAY gửi về)
+            pay.AddRequestData("vnp_Amount", (hoadon.tongHoaDon * 100).ToString()); //số tiền cần thanh toán, công thức: số tiền * 100 - ví dụ 10.000 (mười nghìn đồng) --> 1000000
+            if (!String.IsNullOrEmpty(requestOrder.bankCode))
+            {
+                pay.AddRequestData("vnp_BankCode", requestOrder.bankCode);
+            }
+            //pay.AddRequestData("vnp_BankCode", ""); //Mã Ngân hàng thanh toán (tham khảo: https://sandbox.vnpayment.vn/apis/danh-sach-ngan-hang/), có thể để trống, người dùng có thể chọn trên cổng thanh toán VNPAY
+            pay.AddRequestData("vnp_CreateDate", hoadon.ngayXuatDon.ToString("yyyyMMddHHmmss")); //ngày thanh toán theo định dạng yyyyMMddHHmmss
+            pay.AddRequestData("vnp_CurrCode", "VND"); //Đơn vị tiền tệ sử dụng thanh toán. Hiện tại chỉ hỗ trợ VND
+            pay.AddRequestData("vnp_IpAddr", Utils.GetIpAddress(HttpContext)); //Địa chỉ IP của khách hàng thực hiện giao dịch
+            if (!string.IsNullOrEmpty(requestOrder.vnpLocale))
+            {
+                pay.AddRequestData("vnp_Locale", requestOrder.vnpLocale);
+            }
+            else
+            {
+                pay.AddRequestData("vnp_Locale", "vn");
+            }
+            //pay.AddRequestData("vnp_Locale", "vn"); //Ngôn ngữ giao diện hiển thị - Tiếng Việt (vn), Tiếng Anh (en)
+            pay.AddRequestData("vnp_OrderInfo", "Thanh toan don hang:" + hoadon.HoaDonId); //Thông tin mô tả nội dung thanh toán
+            pay.AddRequestData("vnp_OrderType", "other"); //topup: Nạp tiền điện thoại - billpayment: Thanh toán hóa đơn - fashion: Thời trang - other: Thanh toán trực tuyến
+            pay.AddRequestData("vnp_ReturnUrl", requestOrder.vnp_Returnurl); //URL thông báo kết quả giao dịch khi Khách hàng kết thúc thanh toán
+            pay.AddRequestData("vnp_TxnRef", hoadon.HoaDonId); //mã hóa đơn
+            pay.AddRequestData("vnp_ExpireDate", DateTime.Now.AddDays(3).ToString("yyyyMMddHHmmss"));
+            string paymentUrl = pay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
+            return Ok((new Response { Status = 200, Message = "Ok", Data = paymentUrl }));
+        }
+
+        [Authorize]
+        [HttpPost("ThanhToanVNPayTheoHoaDon")]
+        public async Task<IActionResult> ThanhToanVNPayTheoHoaDon([FromBody] ThanhToanVNPayChoHoaDonModel requestOrder)
+        {
+            //Get Config Info
+            //string vnp_Returnurl = _configuration["VnPaySettings:vnp_Returnurl"]; //URL nhan ket qua tra ve 
+            string vnp_Url = _configuration["VnPaySettings:vnp_Url"]; //URL thanh toan cua VNPAY 
+            string vnp_TmnCode = _configuration["VnPaySettings:vnp_TmnCode"]; //Ma website
+            string vnp_HashSecret = _configuration["VnPaySettings:vnp_HashSecret"]; //Chuoi bi mat
+
+            if (string.IsNullOrEmpty(vnp_TmnCode) || string.IsNullOrEmpty(vnp_HashSecret))
+            {
+                return BadRequest((new Response { Status = 400, Message = "Vui lòng cấu hình các tham số: vnp_TmnCode,vnp_HashSecret trong file web.config" }));
+            }
+
+            if (string.IsNullOrEmpty(requestOrder.hoaDonId))
+                return BadRequest(new Response { Status = 400, Message = "Thiếu hoaDonId!" });
+            if (string.IsNullOrEmpty(requestOrder.vnp_Returnurl))
+                return BadRequest(new Response { Status = 400, Message = "Thiếu vnp_Returnurl!" });
+
+            // check out thành công tiến hành lưu lại hóa đơn
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+
+            var findUser = await _context.NguoiDungs.FindAsync(NguoiDungId);
+            if (findUser == null)
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy Người dùng" });
+
+            // lấy hóa đơn
+            var hoadon = await _context.HoaDons.Where(x => x.HoaDonId == requestOrder.hoaDonId).FirstOrDefaultAsync();
+            if(hoadon == null)
+                return BadRequest(new Response { Status = 400, Message = "Không tìm thấy hóa đơn" });
+            if (hoadon.daThanhToan == true)
+                return BadRequest(new Response { Status = 400, Message = "Hóa đơn đã thanh toán" });
             // tạo request VNPAY
             VnPayLibrary pay = new VnPayLibrary();
             pay.AddRequestData("vnp_Version", "2.1.0"); //Phiên bản api mà merchant kết nối. Phiên bản hiện tại là 2.1.0
