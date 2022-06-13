@@ -233,7 +233,6 @@ namespace WebBanHangAPI.Controllers
             else
                 phanTrangSanPham.TongSoTrang = (int)(tongRecord / kichthuoctrang + 1);
             return Ok(new Response { Status = 200, Message = Message.Success, Data = phanTrangSanPham });
-            return Ok(new Response { Status = 200, Message = Message.Success, Data = findsanphams });
         }
         [Authorize]
 
