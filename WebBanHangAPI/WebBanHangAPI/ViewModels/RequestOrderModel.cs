@@ -12,5 +12,6 @@ namespace WebBanHangAPI.ViewModels
         public string diaChiGiaoHang { get; set; }
         public string sdtNguoiNhan { get; set; }
         public bool thanhToanOnline { get; set; }
+        public string maGiamGiaId { get; set; }
     }
 }

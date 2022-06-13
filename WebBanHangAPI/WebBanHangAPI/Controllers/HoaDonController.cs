@@ -365,7 +365,83 @@ namespace WebBanHangAPI.Controllers
                 if (requestOrder.danhSachDat.Any(order => order.SanPhamId == item.SanPhamId))
                     _context.GioHangs.Remove(item);
             }
+            //Tính tổng hóa đơn có thêm mã giảm giá
+            var findMaGiamGia = await _context.MaGiamGias.Where(m => m.MaGiamGiaId == requestOrder.maGiamGiaId).ToListAsync();
+            foreach (var maGiam in findMaGiamGia)
+            {
+                //Kiểm tra thời gian sử dụng
+                if (maGiam.NgayBatDau.Value.Date <= hoadon.ngayXuatDon.Date && hoadon.ngayXuatDon.Date <= maGiam.NgayHetHang.Value.Date)
+                {
+                    //Kiểm tra số lượng mã giảm giá còn lại
+                    if (maGiam.SoLuongSuDUng > 0)
+                    {
+                        //Kiểm tra đơn tối thiểu có đủ để sử dụng không
+                        if (maGiam.DonToiThieu <= tongHoaDon)
+                        {
+                            //Tìm mã trong bảng MaCuaNgDung
+                            var Ma = await _context.MaGiamGiaCuaNgDungs.Where(m => m.MaGiamGiaId == maGiam.MaGiamGiaId && m.NguoiDungId == NguoiDungId).ToListAsync();
+                            //Kiểm tra mã của người dùng đã sử dụng không
+                            foreach (var m in Ma)
+                            {
+                                if (m.DaSuDung == false)
+                                {
+                                    //Chuyển mã thành đã sử dụng
+                                    m.DaSuDung = true;
 
+                                    //Số lượng mã giảm giá giảm đi 1
+                                    maGiam.SoLuongSuDUng--;
+
+                                    //Nếu bằng 0 thì giảm trực tiếp vào đơn
+                                    if (maGiam.KieuGiam == 0)
+                                    {
+                                        tongHoaDon = tongHoaDon - maGiam.GiamToiDa;
+                                        if (tongHoaDon < 0) tongHoaDon = 0;
+                                    }
+
+                                    // Nếu bằng 1 thì giảm theo % 
+                                    if (maGiam.KieuGiam == 1)
+                                    {
+                                        //Nếu phần số tiền giảm theo phần trăm lớn hơn giảm tối đa thì giảm trực tiếp
+                                        if(tongHoaDon * maGiam.GiamGia > maGiam.GiamToiDa) tongHoaDon = tongHoaDon - maGiam.GiamGia;
+                                        else //Nếu k lớn hơn thì giảm theo phần trăm
+                                        tongHoaDon = tongHoaDon - (tongHoaDon * (maGiam.GiamGia/100));
+                                    }
+                                }
+                                else
+                                {
+                                    //Trả về thông báo không thành công
+                                    return BadRequest(new Response { Status = 400, Message = "Bạn đã sử dụng mã này rồi" });
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //Trả về thông báo không thành công
+                            return BadRequest(new Response { Status = 400, Message = $"Không sử dụng được mã giảm giá vì không đủ đơn hàng tối thiểu! Đơn tối tối thiểu để sử dụng là {maGiam.DonToiThieu} VNĐ" });
+                        }
+                    }
+                    else
+                    {
+                        //Trả về thông báo không thành công
+                        return BadRequest(new Response { Status = 400, Message = "Mã giảm giá có thể sử dụng đã hết" });
+                    }
+                }
+                else
+                {
+                    //trả về thông báo không thành công
+                    if (maGiam.NgayBatDau.Value.Date > hoadon.ngayXuatDon.Date)
+                    {
+                        //Chưa tới ngày sử dụng
+                        return BadRequest(new Response { Status = 400, Message = "Chưa tới ngày sử dụng" });
+                    }
+                    if (hoadon.ngayXuatDon.Date > maGiam.NgayHetHang.Value.Date)
+                    {
+                        //Mã đã hết hạn
+                        return BadRequest(new Response { Status = 400, Message = "Mã đã hết hạn" });
+                    }
+
+                }
+            }
             hoadon.tongHoaDon = tongHoaDon;
             try
             {
@@ -631,6 +707,7 @@ namespace WebBanHangAPI.Controllers
                 chitietdat.SanPhamId = sp.SanPhamId;
                 SetValuesChitietHD(ref chitietdat, sp.tenSP, sp.hinhAnh, sp.giamGia, sp.giaTien, item.soLuongDat);
                 _context.ChiTietHDs.Add(chitietdat);
+                //Tính toán tổng hóa đơn khi áp dụng mã giảm giá
                 tongHoaDon += chitietdat.tongTien;
             }
             // xoa san pham trong gio hang
@@ -947,7 +1024,7 @@ namespace WebBanHangAPI.Controllers
             result.giamGia = giamGia;
             result.giaTien = giaTien;
             result.soLuongDat = soLuongDat;
-            result.tongTien = (giaTien * (100 - giamGia) / 100) * soLuongDat;
+            result.tongTien = (giaTien * (100 - giamGia) / 100) * soLuongDat; 
         }
         [Authorize]
         [HttpPost("taohoadon")]
@@ -1004,7 +1081,7 @@ namespace WebBanHangAPI.Controllers
                 chitietdat.HoaDonId = hoadon.HoaDonId;
                 chitietdat.SanPhamId = sp.SanPhamId;
                 SetValuesChitietHD(ref chitietdat, sp.tenSP, sp.hinhAnh, sp.giamGia, sp.giaTien, item.soLuongDat);
-                _context.ChiTietHDs.Add(chitietdat);
+                _context.ChiTietHDs.Add(chitietdat);                 
                 tongHoaDon += chitietdat.tongTien;
             }
             // xoa san pham trong gio hang
@@ -1015,6 +1092,83 @@ namespace WebBanHangAPI.Controllers
                     _context.GioHangs.Remove(item);
             }
 
+            //Tính tổng hóa đơn có thêm mã giảm giá
+            var findMaGiamGia = await _context.MaGiamGias.Where(m => m.MaGiamGiaId == requestOrder.maGiamGiaId).ToListAsync();
+            foreach (var maGiam in findMaGiamGia)
+            {
+                //Kiểm tra thời gian sử dụng
+                if(maGiam.NgayBatDau.Value.Date <= hoadon.ngayXuatDon.Date && hoadon.ngayXuatDon.Date <= maGiam.NgayHetHang.Value.Date)
+                {
+                    //Kiểm tra số lượng mã giảm giá còn lại
+                    if(maGiam.SoLuongSuDUng > 0)
+                    {
+                        //Kiểm tra đơn tối thiểu có đủ để sử dụng không
+                        if (maGiam.DonToiThieu <= tongHoaDon)
+                        {
+                            //Tìm mã trong bảng MaCuaNgDung
+                            var Ma = await _context.MaGiamGiaCuaNgDungs.Where(m => m.MaGiamGiaId == maGiam.MaGiamGiaId && m.NguoiDungId == NguoiDungId).ToListAsync();
+                            //Kiểm tra mã của người dùng đã sử dụng không
+                            foreach (var m in Ma)
+                            {
+                                if(m.DaSuDung == false)
+                                {
+                                    //Chuyển mã thành đã sử dụng
+                                    m.DaSuDung = true;
+
+                                    //Số lượng mã giảm giá giảm đi 1
+                                    maGiam.SoLuongSuDUng--;
+
+                                    //Nếu bằng 0 thì giảm trực tiếp vào đơn
+                                    if (maGiam.KieuGiam == 0)
+                                    {
+                                        tongHoaDon = tongHoaDon - maGiam.GiamToiDa;
+                                        if (tongHoaDon < 0) tongHoaDon = 0;
+                                    }
+
+                                    // Nếu bằng 1 thì giảm theo % 
+                                    if (maGiam.KieuGiam == 1)
+                                    {
+                                        //Nếu phần số tiền giảm theo phần trăm lớn hơn giảm tối đa thì giảm trực tiếp
+                                        if (tongHoaDon * maGiam.GiamGia > maGiam.GiamToiDa) tongHoaDon = tongHoaDon - maGiam.GiamGia;
+                                        else //Nếu k lớn hơn thì giảm theo phần trăm
+                                            tongHoaDon = tongHoaDon - (tongHoaDon * (maGiam.GiamGia/100));
+                                    }
+                                }
+                                else
+                                {
+                                    //Trả về thông báo không thành công
+                                    return BadRequest(new Response { Status = 400, Message = "Bạn đã sử dụng mã này rồi" });
+                                }                                   
+                            }                           
+                        }
+                        else
+                        {
+                            //Trả về thông báo không thành công
+                            return BadRequest(new Response { Status = 400, Message = $"Không sử dụng được mã giảm giá vì không đủ đơn hàng tối thiểu! Đơn tối tối thiểu để sử dụng là {maGiam.DonToiThieu} VNĐ" });
+                        }
+                    }
+                    else
+                    {
+                        //Trả về thông báo không thành công
+                        return BadRequest(new Response { Status = 400, Message = "Mã giảm giá có thể sử dụng đã hết" });
+                    }
+                }
+                else
+                {
+                    //trả về thông báo không thành công
+                    if (maGiam.NgayBatDau.Value.Date > hoadon.ngayXuatDon.Date)
+                    {
+                        //Chưa tới ngày sử dụng
+                        return BadRequest(new Response { Status = 400, Message = "Chưa tới ngày sử dụng" });
+                    }
+                    if (hoadon.ngayXuatDon.Date > maGiam.NgayHetHang.Value.Date)
+                    {
+                        //Mã đã hết hạn
+                        return BadRequest(new Response { Status = 400, Message = "Mã đã hết hạn" });
+                    }    
+                        
+                }              
+            }
             hoadon.tongHoaDon = tongHoaDon;
             try
             {

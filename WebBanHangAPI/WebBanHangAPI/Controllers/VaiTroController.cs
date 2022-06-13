@@ -57,7 +57,7 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "tên vai trò bắt buộc" });
             var findvaitro = await _context.VaiTros.Where(u => u.tenVaiTro.Trim() == request.tenVaiTro.Trim()).ToListAsync();
             if (findvaitro.Count != 0)
-                return BadRequest(new Response { Status = 400, Message = "Tên vai trò đã tồn tại, vui lòng chọn tên khác khác" });
+                return BadRequest(new Response { Status = 400, Message = "Tên vai trò đã tồn tại, vui lòng chọn tên khác" });
 
             var newvaitro = new VaiTro();
             newvaitro.tenVaiTro = request.tenVaiTro;

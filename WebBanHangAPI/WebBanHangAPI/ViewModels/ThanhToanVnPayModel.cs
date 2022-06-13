@@ -13,5 +13,6 @@ namespace WebBanHangAPI.ViewModels
         public string bankCode { get; set; }
         public string vnpLocale { get; set; }
         public string vnp_Returnurl { get; set; }
+        public string maGiamGiaId { get; set; }
     }
 }
