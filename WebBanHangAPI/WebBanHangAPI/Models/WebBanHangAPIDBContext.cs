@@ -16,6 +16,8 @@ namespace WebBanHangAPI.Models
         public DbSet<VaiTro> VaiTros { get; set; }
         public DbSet<GioHang> GioHangs { get; set; }
         public DbSet<NguoiDung> NguoiDungs { get; set; }
+        public DbSet<MaGiamGia> MaGiamGias { get; set; }
+        public DbSet<MaGiamGiaCuaNgDung> MaGiamGiaCuaNgDungs { get; set; }
 
         public WebBanHangAPIDBContext(DbContextOptions options) : base(options)
         {
@@ -32,7 +34,7 @@ namespace WebBanHangAPI.Models
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<ChiTietHD>().HasKey(ct => new { ct.HoaDonId, ct.SanPhamId });
             modelBuilder.Entity<GioHang>().HasKey(gh => new { gh.NguoiDungId, gh.SanPhamId });
-
+            modelBuilder.Entity<MaGiamGiaCuaNgDung>().HasKey(mg => new { mg.MaGiamGiaId, mg.NguoiDungId });
         }
     }
 }
