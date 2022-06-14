@@ -233,7 +233,6 @@ namespace WebBanHangAPI.Controllers
             else
                 phanTrangSanPham.TongSoTrang = (int)(tongRecord / kichthuoctrang + 1);
             return Ok(new Response { Status = 200, Message = Message.Success, Data = phanTrangSanPham });
-            return Ok(new Response { Status = 200, Message = Message.Success, Data = findsanphams });
         }
         [Authorize]
 
@@ -331,7 +330,7 @@ namespace WebBanHangAPI.Controllers
 
             var checkname = await _context.SanPhams.Where(s => s.tenSP == request.tenSP && s.SanPhamId != request.SanPhamId).ToListAsync();
 
-            if (checkname.Count != 0)
+            if (checkname.Count > 1)
             {
                 return BadRequest(new Response { Status = 400, Message = "Tên Sản Phẩm đã tồn tại, vui lòng thử tên khác" });
             }
@@ -527,6 +526,8 @@ namespace WebBanHangAPI.Controllers
             var findChiTietHoaDon = await _context.ChiTietHDs
                 .Where(s => s.TrangThaiDanhGia == trangthai)
                 .Select( s => new ItemDanhGiaViewModel { HoaDonId = s.HoaDonId,
+                                                         TenSp = s.tenSP,
+                                                         HinhAnh = s.hinhAnh,
                                                          SanPhamId = s.SanPhamId,
                                                          NguoiDungId = s.HoaDon.NguoiDungId,
                                                          tenNguoiDung = s.HoaDon.NguoiDung.tenNguoiDung,

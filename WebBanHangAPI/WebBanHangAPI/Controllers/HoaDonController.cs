@@ -1256,6 +1256,55 @@ namespace WebBanHangAPI.Controllers
         }
 
         [Authorize]
+        [HttpPut("nguoidungxacnhandon/{id}")]
+        public async Task<IActionResult> NguoiDungXacNhanDon(string id)
+        {
+            var NguoiDungId = "";
+            Request.Headers.TryGetValue("Authorization", out var tokenheaderValue);
+            JwtSecurityToken token = null;
+            try
+            {
+                token = _jwtAuthenticationManager.GetInFo(tokenheaderValue);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
+            }
+
+            NguoiDungId = token.Claims.First(claim => claim.Type == "nguoiDungId").Value;
+
+            var findHoaDon = await _context.HoaDons.FindAsync(id);
+            if (findHoaDon == null)
+            {
+                return NotFound(new Response { Status = 404, Message = "Không tìm thấy hóa đơn" });
+            }
+            if (NguoiDungId != findHoaDon.NguoiDungId)
+                return BadRequest(new Response { Status = 400, Message = "Hóa đơn yêu cầu hủy không trùng khách hàng Id!" });
+            if (findHoaDon.TrangThaiGiaoHangId != "3")
+                return BadRequest(new Response { Status = 400, Message = "Đơn hàng phải ở trạng thái đang giao trước!" });
+            findHoaDon.daThanhToan = true;
+                   
+            var findCTHoaDon = await _context.ChiTietHDs.Where(hd => hd.HoaDonId == findHoaDon.HoaDonId).ToListAsync();
+            List<string> ListIdSP = findCTHoaDon.Select(o => o.SanPhamId).ToList();
+            var listSP = _context.SanPhams.Where(e => ListIdSP.Contains(e.SanPhamId));
+            Dictionary<string, int> soluongdat = findCTHoaDon.ToDictionary(x => x.SanPhamId, x => x.soLuongDat);
+            foreach (var item in listSP)
+            {
+                item.soLuongDaBan += soluongdat[item.SanPhamId];
+            }
+            try
+            {
+                findHoaDon.TrangThaiGiaoHangId = "4";
+                await _context.SaveChangesAsync();
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                return BadRequest(new Response { Status = 400, Message = e.ToString() });
+            }
+            return Ok(new Response { Status = 200, Message = "Xác nhận đơn hàng thành công" });
+        }
+
+        [Authorize]
         [HttpPut("nguoidunghuydonhang/{id}")]
         public async Task<IActionResult> NguoiDungHuyDonHang(string id)
         {

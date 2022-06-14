@@ -15,5 +15,7 @@ namespace WebBanHangAPI.ViewModels
         public int SoSao { get; set; }
         public string BinhLuanDanhGia { get; set; }
         public int TrangThaiDanhGia { get; set; }
+        public string TenSp { get;  set; }
+        public string HinhAnh { get; set; }
     }
 }
