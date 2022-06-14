@@ -908,7 +908,10 @@ namespace WebBanHangAPI.Controllers
                     giaTien = ct.giaTien,
                     giamGia = ct.giamGia,
                     soLuongDat = ct.soLuongDat,
-                    tongTien = ct.tongTien
+                    tongTien = ct.tongTien,
+                    SoSao = ct.SoSao,
+                    BinhLuanDanhGia = ct.BinhLuanDanhGia,
+                    TrangThaiDanhGia = ct.TrangThaiDanhGia
                 }).ToList()
             }).ToListAsync();
             if (findHoaDon.Count == 0)
