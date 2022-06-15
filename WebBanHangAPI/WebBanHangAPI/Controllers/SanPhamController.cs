@@ -167,7 +167,8 @@ namespace WebBanHangAPI.Controllers
                     isDeleted = sp.isDeleted,
                 });
             var tongRecord = await query.CountAsync();
-            var findsanphams = await query.ToListAsync();
+            var findsanphams = await query.Skip((tranghientai - 1) * kichthuoctrang)
+                                            .Take(kichthuoctrang).ToListAsync();
             foreach (var item in findsanphams)
             {
                 var findchitiethoadon = await _context.ChiTietHDs
@@ -210,7 +211,8 @@ namespace WebBanHangAPI.Controllers
                 });
 
             var tongRecord = await query.CountAsync();
-            var findsanphams = await query.ToListAsync();
+            var findsanphams = await query.Skip((tranghientai - 1) * kichthuoctrang)
+                                            .Take(kichthuoctrang).ToListAsync();
             foreach (var item in findsanphams)
             {
                 var findchitiethoadon = await _context.ChiTietHDs
