@@ -467,8 +467,8 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
             }
             NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
-            if (NguoiDungRole != "admin")
-                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
+            if (NguoiDungRole != "admin" && NguoiDungRole != "staff")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin hoặc tài khoản nhân viên" });
 
             if (String.IsNullOrEmpty(request.HoaDonId))
                 return BadRequest(new Response { Status = 400, Message = "Thiếu HoaDonId" });
@@ -519,8 +519,8 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "Không xác thực được người dùng" });
             }
             NguoiDungRole = token.Claims.First(claim => claim.Type == "vaiTro").Value;
-            if (NguoiDungRole != "admin")
-                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin" });
+            if (NguoiDungRole != "admin" && NguoiDungRole != "staff")
+                return BadRequest(new Response { Status = 400, Message = "Không có quyền!, vui lòng đăng nhập với tài khoản admin hoặc nhân viên" });
 
             if (trangthai < 0 || trangthai > 3)
                 return BadRequest(new Response { Status = 400, Message = "TrangThai phải từ 0 đến 3" });
