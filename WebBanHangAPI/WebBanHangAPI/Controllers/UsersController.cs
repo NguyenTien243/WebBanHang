@@ -544,8 +544,56 @@ namespace WebBanHangAPI.Controllers
             }
             return Ok(new Response { Status = 200, Message = "Xóa thành công" });
         }
+        [Authorize]
+        [HttpGet("timkiemnguoidung/{name}/{vaitro}/{timkiem}")]
+        public async Task<IActionResult> TimKiemNguoiDung(string name, int vaitro, int timkiem)
+        {
+            List<NguoiDungModel> listcustomer;
+            if (vaitro == 2)
+            {
+                if(timkiem == 1)
+                {
+                    listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.sDT.Contains(name.Trim()) && s.daXoa == false && s.VaiTro.tenVaiTro == "staff").Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
+                    return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
+                }
 
 
+                if (timkiem == 2)
+                {
+                    listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.tenNguoiDung.Contains(name.Trim()) && s.daXoa == false && s.VaiTro.tenVaiTro == "staff").Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
+                    return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
+                }
+                if (timkiem == 3)
+                {
+                    listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.email.Contains(name.Trim()) && s.daXoa == false && s.VaiTro.tenVaiTro == "staff").Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
+                    return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
+                }
+            
+            }
+
+
+            if (vaitro == 3)
+            {
+                if (timkiem == 1)
+                {
+                    listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.sDT.Contains(name.Trim()) && s.daXoa == false && s.VaiTro.tenVaiTro == "customer").Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
+                    return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
+                }
+
+
+                if (timkiem == 2)
+                {
+                    listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.tenNguoiDung.Contains(name.Trim()) && s.daXoa == false && s.VaiTro.tenVaiTro == "customer").Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
+                    return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
+                }
+                if (timkiem == 3)
+                {
+                    listcustomer = await _context.NguoiDungs.Include(p => p.VaiTro).Where(s => s.email.Contains(name.Trim()) && s.daXoa == false && s.VaiTro.tenVaiTro == "customer").Select(nd => new NguoiDungModel { NguoiDungId = nd.NguoiDungId, tenDangNhap = nd.tenDangNhap, email = nd.email, sDT = nd.sDT, conHoatDong = nd.conHoatDong, diaChi = nd.diaChi, gioiTinh = nd.gioiTinh, tenNguoiDung = nd.tenNguoiDung, VaiTroId = nd.VaiTroId }).ToListAsync();
+                    return Ok(new Response { Status = 200, Message = Message.Success, Data = listcustomer });
+                }
+            }
+            return BadRequest(new Response { Status = 400, Message = "Không tìm thấy người dùng!" });
+        }
     }
 
 
