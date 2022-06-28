@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -123,10 +124,11 @@ namespace WebBanHangAPI.Controllers
             {
                 return NotFound(new Response { Status = 404, Message = "Không tìm thấy người dùng" });
             }
+            string newPasswordOldHashed = GenerateSha256Hash(request.matKhauMoi, _configuration["AppSettings:Salt"]);
 
             try
             {
-                findUser.matKhau = request.matKhauMoi;
+                findUser.matKhau = newPasswordOldHashed;
                 await _context.SaveChangesAsync();
             }
             catch (IndexOutOfRangeException e)
@@ -146,7 +148,9 @@ namespace WebBanHangAPI.Controllers
                 return BadRequest(new Response { Status = 400, Message = "Chưa nhập tên đăng nhập" });
             if (string.IsNullOrEmpty(request.matKhau))
                 return BadRequest(new Response { Status = 400, Message = "Chưa nhập mật khẩu" });
-            var finduser = await _context.NguoiDungs.Where(u => u.tenDangNhap == request.tenDangNhap && u.matKhau == request.matKhau).ToListAsync();
+            string passwordHashed = GenerateSha256Hash(request.matKhau, _configuration["AppSettings:Salt"]);
+
+            var finduser = await _context.NguoiDungs.Where(u => u.tenDangNhap == request.tenDangNhap && u.matKhau == passwordHashed).ToListAsync();
             if (finduser.Count == 0)
                 return BadRequest(new Response { Status = 400, Message = "Sai tên đăng nhập hoặc mật khẩu" });
             var vaitro = await _context.VaiTros.Where(u => u.VaiTroId == finduser[0].VaiTroId).ToListAsync();
@@ -202,13 +206,15 @@ namespace WebBanHangAPI.Controllers
             var findemail = await _context.NguoiDungs.Where(u => u.email == request.email).ToListAsync();
             if (findemail.Count != 0)
                 return BadRequest(new Response { Status = 400, Message = "Email đã đăng ký, vui lòng chọn email khoản khác" });
+
+            string passwordHashed = GenerateSha256Hash(request.matKhau, _configuration["AppSettings:Salt"]);
             NguoiDung nguoiDung = new NguoiDung();
             nguoiDung.tenNguoiDung = request.tenNguoiDung;
             nguoiDung.email = request.email;
             nguoiDung.sDT = request.sDT;
             nguoiDung.diaChi = request.diaChi;
             nguoiDung.tenDangNhap = request.tenDangNhap;
-            nguoiDung.matKhau = request.matKhau;
+            nguoiDung.matKhau = passwordHashed;
             nguoiDung.VaiTroId = "3";
             nguoiDung.conHoatDong = true;
 
@@ -270,13 +276,15 @@ namespace WebBanHangAPI.Controllers
             var findemail = await _context.NguoiDungs.Where(u => u.email == request.email).ToListAsync();
             if (findemail.Count != 0)
                 return BadRequest(new Response { Status = 400, Message = "Email đã đăng ký, vui lòng chọn email khoản khác" });
+
+            string passwordHashed = GenerateSha256Hash(request.matKhau, _configuration["AppSettings:Salt"]);
             NguoiDung nguoiDung = new NguoiDung();
             nguoiDung.tenNguoiDung = request.tenNguoiDung;
             nguoiDung.email = request.email;
             nguoiDung.sDT = request.sDT;
             nguoiDung.diaChi = request.diaChi;
             nguoiDung.tenDangNhap = request.tenDangNhap;
-            nguoiDung.matKhau = request.matKhau;
+            nguoiDung.matKhau = passwordHashed;
             nguoiDung.VaiTroId = "2";
             nguoiDung.conHoatDong = true;
 
@@ -490,12 +498,15 @@ namespace WebBanHangAPI.Controllers
             {
                 return NotFound(new Response { Status = 404, Message = "Không tìm thấy người dùng" });
             }
-            if (findUser.matKhau != request.matKhauHienTai)
+            string currentPasswordHashed = GenerateSha256Hash(request.matKhauHienTai, _configuration["AppSettings:Salt"]);
+            if (findUser.matKhau != currentPasswordHashed)
                 return BadRequest(new Response { Status = 400, Message = "Mật khẩu hiện tại không đúng!" });
+
+            string newPasswordHashed = GenerateSha256Hash(request.matKhauMoi, _configuration["AppSettings:Salt"]);
 
             try
             {
-                findUser.matKhau = request.matKhauMoi;
+                findUser.matKhau = newPasswordHashed;
                 await _context.SaveChangesAsync();
             }
             catch (IndexOutOfRangeException e)
@@ -593,6 +604,13 @@ namespace WebBanHangAPI.Controllers
                 }
             }
             return BadRequest(new Response { Status = 400, Message = "Không tìm thấy người dùng!" });
+        }
+        private String GenerateSha256Hash(string input, string salt)
+        {
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(input + salt);
+            SHA256Managed shaString = new SHA256Managed();
+            byte[] hash = shaString.ComputeHash(bytes);
+            return BitConverter.ToString(hash);
         }
     }
 

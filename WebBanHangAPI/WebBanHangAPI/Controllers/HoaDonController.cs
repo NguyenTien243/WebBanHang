@@ -33,15 +33,18 @@ namespace WebBanHangAPI.Controllers
         private readonly string _clientId;
         private readonly string _secretKey;
         private readonly IConfiguration _configuration;
+        private readonly IMailService _mailService;
         public double TyGiaUSD = 23300;
         public HoaDonController(WebBanHangAPIDBContext context, IJwtAuthenticationManager jwtAuthenticationManager,
-            IConfiguration config)
+            IConfiguration config,
+            IMailService mailService)
         {
             _context = context;
             _jwtAuthenticationManager = jwtAuthenticationManager;
             _clientId = config["PaypalSettings:ClientId"];
             _secretKey = config["PaypalSettings:SecretKey"];
             _configuration = config;
+            _mailService = mailService;
         }
 
         [HttpPost("ThanhToanPaypal")]
@@ -1181,6 +1184,24 @@ namespace WebBanHangAPI.Controllers
             {
                 return BadRequest(new Response { Status = 400, Message = e.ToString() });
             }
+
+            var message = new MailRequest();
+            message.Subject = "CTShop Đặt hàng thành công";
+            message.ToEmail = findUser.email;
+            message.Body = $"Xin chào {findUser.tenNguoiDung}." +
+                "<br/>" +
+                $"Đơn hàng của bạn với mã hóa đơn {hoadon.HoaDonId} đã được đặt thành công, thông tin chi tiết xem tại: https://fe-user-livid.vercel.app/bill" +
+                "<br/>" +
+                "Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi."
+            ;
+            try
+            {
+                await _mailService.SendEmailAsync(message);
+            }
+            catch (Exception ex)
+            {
+               
+            }
             return Ok(new Response { Status = 200, Message = "Tạo hóa đơn thành công" });
         }
 
@@ -1354,5 +1375,7 @@ namespace WebBanHangAPI.Controllers
             }
             return Ok(new Response { Status = 200, Message = "Hủy đơn hàng thành công" });
         }
+        
     }
+    
 }
